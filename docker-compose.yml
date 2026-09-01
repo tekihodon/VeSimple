@@ -1,8 +1,11 @@
 services:
   veapp:
-    image: tekihodon/vesimple:1.0.0
+    image: tekihodon/vesimple:1.2.0
     container_name: veapp
     restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "${VESIMPLE_PORT:-3333}:3333"
     volumes:
