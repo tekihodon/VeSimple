@@ -15,7 +15,13 @@ def get_seats(tier_id=None, status=None, order_id=None):
     return query(sql, params if params else None)
 
 def get_seats_for_chart():
-    seats = query('SELECT code, tier_id, row_id, pos_x, pos_z, rot_y, status FROM "9hkem15_seats" ORDER BY row_id, code')
+    seats = query('''
+        SELECT s.code, s.tier_id, s.row_id, s.pos_x, s.pos_z, s.rot_y, s.status,
+               o.code AS order_code
+        FROM "9hkem15_seats" s
+        LEFT JOIN "9hkem15_orders" o ON o.id = s.order_id
+        ORDER BY s.row_id, s.code
+    ''')
     return {s['code']: s for s in seats}
 
 def hold_seats(tier_id, qty, session_id):

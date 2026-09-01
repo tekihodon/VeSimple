@@ -1,10 +1,11 @@
 {
   "name": "VeSimple",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "VeSimple - Hệ thống bán vé liveshow 9 Giờ Kém 15 (Flask + PostgreSQL + Three.js)",
   "docker_image": "tekihodon/vesimple",
   "released_at": "2026-09-01",
   "changelog": [
+    "1.1.0: Admin — phân lại ghế đã phân (un-pick + đổi), sửa đơn dạng giỏ hàng (tự thu hồi ghế), bộ lọc trạng thái multi-checkbox với default ẩn đơn huỷ, thêm cột thời gian đặt, sắp xếp mới nhất trước, panel thống kê mới (doanh thu + bán vé theo hạng + chart doanh thu theo ngày với date range). Customer — nút Show âm nhạc render từ config.show (banner + timeline).",
     "1.0.0: Initial release - tab Phân ghế 3D, tích hợp VietQR, gửi email xác nhận qua Resend, bổ sung tab Tổng quan (hover hiện tên khách + khoanh tròn cả đơn)."
   ]
 }

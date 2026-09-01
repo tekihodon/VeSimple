@@ -65,6 +65,8 @@
         .seat-chip { background: rgba(59,130,246,0.2); color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
         .btn-save-assign { background: linear-gradient(135deg,#10b981,#059669); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px; }
         .btn-save-assign:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .btn-qty { width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#fff;font-size:18px;font-weight:700;cursor:pointer;line-height:1; }
+        .btn-qty:hover { background:rgba(255,255,255,0.12); }
         .order-detail-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .order-detail-modal.active { display: flex; }
         .modal-content { background: #1e293b; border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
@@ -105,8 +107,36 @@
             </div>
             
             <div class="panel active" id="panel-orders">
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-start;">
+                    <input type="text" id="filter-code" placeholder="🔎 Lọc theo mã đơn" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;flex:1;min-width:160px;" oninput="applyFilters()">
+                    <input type="text" id="filter-name" placeholder="👤 Lọc theo tên khách / SĐT / Email" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;flex:1;min-width:200px;" oninput="applyFilters()">
+                    <div style="display:flex;flex-direction:column;gap:6px;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);padding:10px 14px;border-radius:8px;font-size:12px;min-width:240px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:700;color:#cbd5e1;text-transform:uppercase;font-size:11px;">Tình trạng đơn</span>
+                            <label style="cursor:pointer;color:#38bdf8;font-size:11px;"><input type="checkbox" id="filter-include-cancelled" onchange="applyFilters()" style="vertical-align:middle;"> Bao gồm đã hủy</label>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" class="filter-status-cb" value="pending_payment" checked onchange="applyFilters()"> <span class="status-badge status-pending_payment">Chờ TT</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" class="filter-status-cb" value="paid" checked onchange="applyFilters()"> <span class="status-badge status-paid">Đã TT</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" class="filter-status-cb" value="assigned" checked onchange="applyFilters()"> <span class="status-badge status-assigned">Đã gửi ghế</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" class="filter-status-cb" value="cancelled" onchange="applyFilters()"> <span class="status-badge status-cancelled">Đã hủy</span></label>
+                        </div>
+                    </div>
+                    <select id="sort-by" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;" onchange="applyFilters()">
+                        <option value="created_desc">⏱ Mới nhất</option>
+                        <option value="created_asc">⏱ Cũ nhất</option>
+                        <option value="name_asc">Tên A→Z</option>
+                        <option value="name_desc">Tên Z→A</option>
+                        <option value="status">Trạng thái</option>
+                        <option value="total_desc">Tổng tiền ↓</option>
+                        <option value="total_asc">Tổng tiền ↑</option>
+                    </select>
+                    <button onclick="clearFilters()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:12px;">✕ Xóa lọc</button>
+                    <button id="btn-bulk-delete" onclick="bulkDeleteSelected()" disabled style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:12px;opacity:0.5;">🗑 Xóa đã chọn (0)</button>
+                    <span id="filter-count" style="font-size:12px;color:#94a3b8;margin-left:auto;align-self:center;"></span>
+                </div>
                 <table class="orders-table">
-                    <thead><tr><th>Mã ĐH</th><th>Khách hàng</th><th>SL</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                    <thead><tr><th style="width:36px;"><input type="checkbox" id="select-all-orders" onchange="toggleSelectAll(this.checked)"></th><th>Mã ĐH</th><th>Khách hàng</th><th>SL</th><th>Tổng tiền</th><th>Thời gian đặt</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
                     <tbody id="orders-tbody"></tbody>
                 </table>
             </div>
@@ -133,6 +163,7 @@
                             <p><strong>Khách:</strong> <span id="sel-order-name"></span></p>
                             <p><strong>Cần phân:</strong> <span id="sel-order-qty"></span> ghế</p>
                             <p><strong>Đã chọn:</strong> <span id="sel-picked-count" style="color:#38bdf8;font-weight:700;">0/0</span></p>
+                            <div id="sel-tier-progress" style="display:flex;flex-direction:column;gap:6px;margin-top:10px;"></div>
                             <div class="selected-seats" id="sel-seats-list"></div>
                         </div>
                         <button class="btn-save-assign" id="btn-save-assign" onclick="saveSeatAssignment()">✓ Lưu phân ghế</button>
@@ -145,9 +176,41 @@
             </div>
 
             <div class="panel" id="panel-stats">
-                <div class="tier-stats" id="tier-stats"></div>
-                <h3 style="font-size:16px;margin-bottom:16px;">Chi tiết theo hàng ghế</h3>
-                <div id="row-stats" style="background:rgba(15,23,42,0.8);border-radius:12px;padding:20px;"></div>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:20px;">
+                    <label style="font-size:12px;color:#94a3b8;">Từ ngày</label>
+                    <input type="date" id="stats-from" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;">
+                    <label style="font-size:12px;color:#94a3b8;">Đến ngày</label>
+                    <input type="date" id="stats-to" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;">
+                    <button onclick="loadStats()" style="background:rgba(56,189,248,0.2);border:1px solid rgba(56,189,248,0.4);color:#38bdf8;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">📊 Áp dụng</button>
+                    <button onclick="setStatsToday()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;">Hôm nay</button>
+                    <button onclick="setStatsAll()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;">Tất cả</button>
+                    <span id="stats-range-label" style="font-size:12px;color:#94a3b8;margin-left:auto;"></span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+                    <div style="background:linear-gradient(135deg,#10b981,#059669);border-radius:16px;padding:20px;">
+                        <div style="font-size:11px;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:1px;">Doanh thu</div>
+                        <div id="stat-total-revenue" style="font-size:26px;font-weight:800;color:#fff;margin-top:6px;">0 đ</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:16px;padding:20px;">
+                        <div style="font-size:11px;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:1px;">Số đơn hợp lệ</div>
+                        <div id="stat-total-orders" style="font-size:26px;font-weight:800;color:#fff;margin-top:6px;">0</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;padding:20px;">
+                        <div style="font-size:11px;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:1px;">Tổng vé bán</div>
+                        <div id="stat-total-seats" style="font-size:26px;font-weight:800;color:#fff;margin-top:6px;">0</div>
+                    </div>
+                </div>
+                <h3 style="font-size:14px;margin-bottom:12px;color:#cbd5e1;text-transform:uppercase;letter-spacing:1px;">📦 Bán vé theo hạng</h3>
+                <div style="background:rgba(15,23,42,0.8);border-radius:12px;padding:16px;margin-bottom:24px;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead><tr style="text-align:left;color:#94a3b8;font-size:11px;text-transform:uppercase;"><th style="padding:8px 0;">Hạng vé</th><th style="padding:8px 0;text-align:right;">Đơn giá</th><th style="padding:8px 0;text-align:right;">Số vé bán</th><th style="padding:8px 0;text-align:right;">Doanh thu</th><th style="padding:8px 0;text-align:right;">Tỷ trọng</th></tr></thead>
+                        <tbody id="stats-tier-tbody"></tbody>
+                    </table>
+                </div>
+                <h3 style="font-size:14px;margin-bottom:12px;color:#cbd5e1;text-transform:uppercase;letter-spacing:1px;">📅 Doanh thu theo ngày</h3>
+                <div style="background:rgba(15,23,42,0.8);border-radius:12px;padding:16px;">
+                    <canvas id="stats-daily-chart" style="width:100%;height:240px;"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -170,6 +233,7 @@
         let selectedOrder = null;
         let selectedSeats = [];
         let requiredSeats = 0;
+        let selectedOrderIds = new Set();
         let scene, camera, renderer, controls;
         let seatObjects = [];
         let seatByCode = {};
@@ -181,6 +245,8 @@
 
         const TIER_COLORS = { VIP: 0xf59e0b, NEAR_VIP: 0xef4444, STANDARD: 0x3b82f6, LAST_ROW: 0xec4899 };
         const TIER_NAMES = { VIP: 'Hạng Nở Hoa', NEAR_VIP: 'Hạng Thức Tỉnh', STANDARD: 'Hạng Thanh Xuân', LAST_ROW: 'Hạng Tích Tắc' };
+        const TIER_HEX = { VIP: '#f59e0b', NEAR_VIP: '#ef4444', STANDARD: '#3b82f6', LAST_ROW: '#ec4899' };
+        let requiredByTier = {};
 
         function parseItems(items) {
             if (Array.isArray(items)) return items;
@@ -198,43 +264,184 @@
             if (name === 'stats') loadStats();
         }
 
+        window.addEventListener('resize', () => { if (document.getElementById('panel-stats').classList.contains('active')) loadStats(); });
+
         async function loadOrders() {
             try {
                 const resp = await fetch('/admin/api/orders');
                 orders = await resp.json();
+                selectedOrderIds = new Set(Array.from(selectedOrderIds).filter(id => orders.some(o => o.id === id)));
                 renderOrders();
                 renderPaidOrdersList();
                 updateStats();
             } catch (e) { showToast('Lỗi tải đơn hàng'); }
         }
 
+        function getActiveFilters() {
+            const cbs = Array.from(document.querySelectorAll('.filter-status-cb'));
+            const statuses = cbs.filter(c => c.checked).map(c => c.value);
+            return {
+                code: (document.getElementById('filter-code')?.value || '').trim().toLowerCase(),
+                name: (document.getElementById('filter-name')?.value || '').trim().toLowerCase(),
+                statuses,
+                sort: document.getElementById('sort-by')?.value || 'created_desc',
+            };
+        }
+
+        const STATUS_ORDER = { pending_payment: 0, paid: 1, assigned: 2, cancelled: 3 };
+
+        function sortOrders(arr, mode) {
+            const copy = arr.slice();
+            copy.sort((a, b) => {
+                switch (mode) {
+                    case 'created_asc': return new Date(a.created_at) - new Date(b.created_at);
+                    case 'name_asc': return (a.full_name || '').localeCompare(b.full_name || '', 'vi');
+                    case 'name_desc': return (b.full_name || '').localeCompare(a.full_name || '', 'vi');
+                    case 'status': return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99) || new Date(b.created_at) - new Date(a.created_at);
+                    case 'total_asc': return (a.total || 0) - (b.total || 0);
+                    case 'total_desc': return (b.total || 0) - (a.total || 0);
+                    case 'created_desc':
+                    default: return new Date(b.created_at) - new Date(a.created_at);
+                }
+            });
+            return copy;
+        }
+
+        function applyFilters() {
+            renderOrders();
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-code').value = '';
+            document.getElementById('filter-name').value = '';
+            document.querySelectorAll('.filter-status-cb').forEach(c => c.checked = (c.value !== 'cancelled'));
+            document.getElementById('sort-by').value = 'created_desc';
+            renderOrders();
+        }
+
+        function toggleSelectAll(checked) {
+            const tbody = document.getElementById('orders-tbody');
+            tbody.querySelectorAll('input.order-checkbox').forEach(cb => {
+                cb.checked = checked;
+                const id = parseInt(cb.dataset.id, 10);
+                if (checked) selectedOrderIds.add(id); else selectedOrderIds.delete(id);
+            });
+            updateBulkDeleteBtn();
+        }
+
+        function onOrderCheckboxChange(cb) {
+            const id = parseInt(cb.dataset.id, 10);
+            if (cb.checked) selectedOrderIds.add(id); else selectedOrderIds.delete(id);
+            const sa = document.getElementById('select-all-orders');
+            const total = document.querySelectorAll('input.order-checkbox').length;
+            if (sa) sa.checked = total > 0 && selectedOrderIds.size === total;
+            updateBulkDeleteBtn();
+        }
+
+        function updateBulkDeleteBtn() {
+            const btn = document.getElementById('btn-bulk-delete');
+            if (!btn) return;
+            const n = selectedOrderIds.size;
+            btn.innerText = `🗑 Xóa đã chọn (${n})`;
+            btn.disabled = n === 0;
+            btn.style.opacity = n === 0 ? '0.5' : '1';
+        }
+
+        async function bulkDeleteSelected() {
+            if (selectedOrderIds.size === 0) return;
+            const ids = Array.from(selectedOrderIds);
+            if (!confirm(`Xóa vĩnh viễn ${ids.length} đơn khỏi hệ thống? Hành động này không thể hoàn tác.`)) return;
+            try {
+                const resp = await fetch('/admin/api/orders/delete', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids }),
+                });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi xóa'); return; }
+                showToast(`Đã xóa ${result.deleted} đơn`);
+                selectedOrderIds.clear();
+                updateBulkDeleteBtn();
+                const sa = document.getElementById('select-all-orders'); if (sa) sa.checked = false;
+                loadOrders();
+                closeModal();
+            } catch (e) { showToast('Lỗi kết nối'); }
+        }
+
         function renderOrders() {
             const tbody = document.getElementById('orders-tbody');
-            tbody.innerHTML = orders.map(o => `
+            const f = getActiveFilters();
+            const filtered = orders.filter(o => {
+                if (f.code && !(o.code || '').toLowerCase().includes(f.code)) return false;
+                if (f.name) {
+                    const blob = `${o.full_name || ''} ${o.phone || ''} ${o.email || ''}`.toLowerCase();
+                    if (!blob.includes(f.name)) return false;
+                }
+                if (f.statuses.length && !f.statuses.includes(o.status)) return false;
+                return true;
+            });
+            const sorted = sortOrders(filtered, f.sort);
+            const counter = document.getElementById('filter-count');
+            if (counter) counter.innerText = `${sorted.length}/${orders.length} đơn`;
+            const total = sorted.length;
+            const fmtDate = (iso) => {
+                if (!iso) return '';
+                const d = new Date(iso);
+                const pad = (n) => String(n).padStart(2, '0');
+                return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            };
+            tbody.innerHTML = sorted.map(o => {
+                const checked = selectedOrderIds.has(o.id) ? 'checked' : '';
+                return `
                 <tr>
+                    <td><input type="checkbox" class="order-checkbox" data-id="${o.id}" ${checked} onchange="onOrderCheckboxChange(this)"></td>
                     <td style="font-weight:700;color:#f59e0b;">${o.code}</td>
                     <td><div>${o.full_name}</div><div style="font-size:11px;color:#94a3b8;">${o.phone}</div></td>
                     <td>${parseItems(o.items).reduce((s,i) => s + i.qty, 0)}</td>
                     <td style="font-weight:700;">${(o.total || 0).toLocaleString('vi-VN')} đ</td>
+                    <td style="font-size:12px;color:#cbd5e1;white-space:nowrap;" title="${o.created_at}">${fmtDate(o.created_at)}</td>
                     <td><span class="status-badge status-${o.status}">${getStatusText(o.status)}</span></td>
                     <td>
                         <button class="btn-action btn-approve" onclick="showOrderDetail(${o.id})">Chi tiết</button>
                         ${o.status === 'pending_payment' ? `<button class="btn-action btn-approve" onclick="markPaid(${o.id})">Duyệt TT</button>` : ''}
                         ${o.status === 'paid' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân ghế</button>` : ''}
-                        ${o.status !== 'cancelled' && o.status !== 'assigned' ? `<button class="btn-action btn-cancel" onclick="cancelOrder(${o.id})">Hủy</button>` : ''}
+                        ${o.status === 'assigned' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân lại</button>` : ''}
+                        ${o.status === 'assigned' ? `<button class="btn-action btn-cancel" onclick="cancelOrder(${o.id})">Hủy</button>` : ''}
+                        ${o.status === 'cancelled' ? `<button class="btn-action btn-approve" onclick="restoreOrder(${o.id})">Khôi phục</button>` : ''}
+                        ${o.status !== 'cancelled' ? `<button class="btn-action btn-assign" onclick="openEditOrder(${o.id})">Sửa</button>` : ''}
+                        <button class="btn-action btn-cancel" onclick="deleteOneOrder(${o.id})">🗑</button>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
+            const sa = document.getElementById('select-all-orders');
+            if (sa) sa.checked = total > 0 && selectedOrderIds.size === total;
+            updateBulkDeleteBtn();
+        }
+
+        async function deleteOneOrder(id) {
+            if (!confirm('Xóa vĩnh viễn đơn này khỏi DB? Không thể hoàn tác.')) return;
+            try {
+                const resp = await fetch(`/admin/api/orders/${id}`, { method: 'DELETE' });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi xóa'); return; }
+                showToast('Đã xóa đơn');
+                selectedOrderIds.delete(id);
+                loadOrders();
+                closeModal();
+            } catch (e) { showToast('Lỗi kết nối'); }
         }
 
         function renderPaidOrdersList() {
-            const paid = orders.filter(o => o.status === 'paid');
+            const eligible = orders.filter(o => o.status === 'paid' || o.status === 'assigned');
             const list = document.getElementById('paid-orders-list');
-            list.innerHTML = paid.map(o => {
+            list.innerHTML = eligible.map(o => {
                 const items = parseItems(o.items);
                 const totalSeats = items.reduce((s, i) => s + i.qty, 0);
+                const assignedCount = (o.seats || []).length;
+                const tag = o.status === 'assigned' ? 'phân lại' : 'phân ghế';
+                const sub = o.status === 'assigned' ? `${assignedCount}/${totalSeats} ghế` : `${totalSeats} ghế`;
                 return `<div onclick="selectForAssign(${o.id})" style="background:rgba(15,23,42,0.8);border-radius:8px;padding:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
-                    <div><span style="font-weight:700;color:#f59e0b;">${o.code}</span> — ${o.full_name} <span style="color:#94a3b8;font-size:12px;">(${totalSeats} ghế)</span></div>
-                    <span style="font-size:11px;color:#3b82f6;">Click để phân →</span>
+                    <div><span style="font-weight:700;color:#f59e0b;">${o.code}</span> — ${o.full_name} <span style="color:#94a3b8;font-size:12px;">(${sub})</span></div>
+                    <span style="font-size:11px;color:#3b82f6;">Click để ${tag} →</span>
                 </div>`;
             }).join('') || '<p style="color:#94a3b8;font-size:13px;">Không có đơn hàng nào chờ phân ghế.</p>';
         }
@@ -272,7 +479,10 @@
             let actions = '';
             if (o.status === 'pending_payment') actions += '<button class="btn-action btn-approve" onclick="markPaid(' + id + ')">✓ Duyệt thanh toán</button>';
             if (o.status === 'paid') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">📍 Phân ghế</button>';
-            if (o.status !== 'cancelled' && o.status !== 'assigned') actions += '<button class="btn-action btn-cancel" onclick="cancelOrder(' + id + ')">✕ Hủy đơn</button>';
+            if (o.status === 'assigned') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">🔁 Phân lại ghế</button>';
+            if (o.status !== 'cancelled') actions += '<button class="btn-action btn-cancel" onclick="cancelOrder(' + id + ')">✕ Hủy đơn</button>';
+            if (o.status === 'cancelled') actions += '<button class="btn-action btn-approve" onclick="restoreOrder(' + id + ')">↺ Khôi phục</button>';
+            if (o.status !== 'cancelled') actions += '<button class="btn-action btn-assign" onclick="openEditOrder(' + id + ')">✎ Sửa</button>';
             document.getElementById('modal-actions').innerHTML = actions;
             document.getElementById('order-modal').classList.add('active');
         }
@@ -298,32 +508,226 @@
             } catch (e) { showToast('Lỗi'); }
         }
 
+        async function restoreOrder(id) {
+            if (!confirm('Khôi phục đơn hàng đã hủy này?')) return;
+            try {
+                const resp = await fetch(`/admin/api/orders/${id}/restore`, { method: 'POST' });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi khôi phục'); return; }
+                showToast(`Đã khôi phục đơn (${getStatusText(result.status)})`);
+                loadOrders();
+                closeModal();
+            } catch (e) { showToast('Lỗi'); }
+        }
+
+        let editCart = {};
+        let editCatalog = [];
+
+        async function openEditOrder(id) {
+            const o = orders.find(x => x.id === id);
+            if (!o) return;
+            try {
+                const r = await fetch('/api/tiers');
+                editCatalog = await r.json();
+            } catch (e) { editCatalog = []; }
+            editCart = {};
+            const existing = parseItems(o.items);
+            existing.forEach(i => { if (i.tier) editCart[i.tier] = (editCart[i.tier] || 0) + (i.qty || 0); });
+            const body = `
+                <div class="detail-row"><span class="label">Mã đơn</span><span class="value" style="color:#f59e0b;">${o.code}</span></div>
+                <div class="detail-row"><span class="label">Trạng thái</span><span class="status-badge status-${o.status}">${getStatusText(o.status)}</span></div>
+                <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                    <div><label style="font-size:11px;color:#94a3b8;display:block;margin-bottom:4px;text-transform:uppercase;">Họ và tên</label><input id="edit-name" value="${(o.full_name||'').replace(/"/g,'&quot;')}" style="width:100%;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;border-radius:8px;font-size:13px;"></div>
+                    <div><label style="font-size:11px;color:#94a3b8;display:block;margin-bottom:4px;text-transform:uppercase;">Số điện thoại</label><input id="edit-phone" value="${(o.phone||'').replace(/"/g,'&quot;')}" style="width:100%;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;border-radius:8px;font-size:13px;"></div>
+                    <div><label style="font-size:11px;color:#94a3b8;display:block;margin-bottom:4px;text-transform:uppercase;">Email</label><input id="edit-email" value="${(o.email||'').replace(/"/g,'&quot;')}" style="width:100%;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;border-radius:8px;font-size:13px;"></div>
+                </div>
+                <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;">
+                    <h4 style="font-size:13px;color:#cbd5e1;text-transform:uppercase;margin-bottom:10px;">🛒 Giỏ vé của đơn</h4>
+                    <div id="edit-cart-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;">
+                        <span style="font-size:13px;color:#94a3b8;">Tổng cộng</span>
+                        <span id="edit-cart-total" style="font-size:16px;font-weight:800;color:#10b981;">0 đ</span>
+                    </div>
+                    <p style="font-size:11px;color:#f59e0b;margin-top:10px;background:rgba(245,158,11,0.1);padding:8px 10px;border-radius:6px;">⚠ Khi lưa, toàn bộ ghế đã phân của đơn này sẽ được tự động thu hồi để phân lại.</p>
+                </div>`;
+            document.getElementById('modal-body').innerHTML = body;
+            renderEditCart();
+            document.getElementById('modal-actions').innerHTML = `
+                <button class="btn-action btn-approve" onclick="submitEditOrder(${id})">💾 Lưu & thu hồi ghế</button>
+                <button class="btn-action btn-cancel" onclick="closeModal()">Hủy</button>`;
+            document.getElementById('order-modal').classList.add('active');
+        }
+
+        function renderEditCart() {
+            const list = document.getElementById('edit-cart-list');
+            const ids = Object.keys(editCart);
+            if (ids.length === 0) {
+                list.innerHTML = '<p style="font-size:12px;color:#64748b;text-align:center;padding:14px;">Giỏ trống — đơn không có vé</p>';
+                document.getElementById('edit-cart-total').innerText = '0 đ';
+                return;
+            }
+            list.innerHTML = ids.map(tid => {
+                const tier = editCatalog.find(t => t.id === tid) || { name: tid, price: 0 };
+                const qty = editCart[tid];
+                const color = TIER_HEX[tid] || '#3b82f6';
+                return `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;background:rgba(255,255,255,0.04);border:1px solid ${color}33;border-radius:10px;padding:10px 12px;">
+                    <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:8px;"></span><strong style="color:#fff;">${tier.name || tid}</strong><div style="font-size:11px;color:#94a3b8;">${(tier.price||0).toLocaleString('vi-VN')} đ / vé</div></div>
+                    <button class="btn-qty" onclick="editChangeQty('${tid}', -1)">−</button>
+                    <span style="font-size:16px;font-weight:800;width:28px;text-align:center;color:${color};">${qty}</span>
+                    <button class="btn-qty" onclick="editChangeQty('${tid}', 1)">+</button>
+                </div>`;
+            }).join('');
+            let total = 0;
+            for (const tid of ids) {
+                const tier = editCatalog.find(t => t.id === tid) || { price: 0 };
+                total += (tier.price || 0) * editCart[tid];
+            }
+            document.getElementById('edit-cart-total').innerText = total.toLocaleString('vi-VN') + ' đ';
+        }
+
+        function editChangeQty(tid, delta) {
+            const next = (editCart[tid] || 0) + delta;
+            if (next <= 0) delete editCart[tid];
+            else editCart[tid] = next;
+            renderEditCart();
+        }
+
+        async function submitEditOrder(id) {
+            const items = [];
+            for (const tid of Object.keys(editCart)) {
+                const tier = editCatalog.find(t => t.id === tid) || { name: tid, price: 0 };
+                items.push({ tier: tid, name: tier.name || tid, price: tier.price || 0, qty: editCart[tid] });
+            }
+            const payload = {
+                full_name: document.getElementById('edit-name').value.trim(),
+                phone: document.getElementById('edit-phone').value.trim(),
+                email: document.getElementById('edit-email').value.trim(),
+                items,
+            };
+            if (!payload.full_name || !payload.phone || !payload.email) { showToast('Vui lòng nhập đủ Họ tên / SĐT / Email'); return; }
+            if (items.length === 0) { showToast('Giỏ trống'); return; }
+            if (!confirm('Lưu thay đổi và thu hồi toàn bộ ghế đã phân của đơn này?')) return;
+            try {
+                const resp = await fetch(`/admin/api/orders/${id}/edit`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi lưu'); return; }
+                showToast('Đã lưu & thu hồi ghế');
+                closeModal();
+                loadOrders();
+            } catch (e) { showToast('Lỗi kết nối'); }
+        }
+
         function selectForAssign(id) {
             const o = orders.find(x => x.id === id);
             if (!o) return;
             selectedOrder = o;
-            selectedSeats = [];
+            const existing = (o.seats || []).map(s => s.code).filter(Boolean);
+            selectedSeats = existing.slice();
             const items = parseItems(o.items);
             const totalSeats = items.reduce((s, i) => s + i.qty, 0);
             requiredSeats = totalSeats;
+            requiredByTier = {};
+            items.forEach(i => {
+                if (!i.tier) return;
+                requiredByTier[i.tier] = (requiredByTier[i.tier] || 0) + (i.qty || 0);
+            });
             document.getElementById('selected-order-info').style.display = 'block';
-            document.getElementById('sel-order-code').innerText = o.code;
+            document.getElementById('sel-order-code').innerText = o.code + (o.status === 'assigned' ? ' (đang phân lại)' : '');
             document.getElementById('sel-order-name').innerText = o.full_name;
             document.getElementById('sel-order-qty').innerText = totalSeats;
+            renderTierProgress();
             updateSelectedSeatsDisplay();
-            document.getElementById('btn-save-assign').disabled = true;
+            document.getElementById('btn-save-assign').disabled = !isSelectionValid();
             if (!document.getElementById('panel-seats').classList.contains('active')) showPanel('seats');
+            loadSeatStatus().then(() => {
+                selectedSeats.forEach(c => {
+                    const sd = seatByCode[c];
+                    if (sd) sd.mat.color.setHex(0x10b981);
+                });
+                applySeatShading();
+                updateSelectedSeatsDisplay();
+            });
+        }
+
+        function renderTierProgress() {
+            const wrap = document.getElementById('sel-tier-progress');
+            if (!wrap) return;
+            const tiers = Object.keys(requiredByTier);
+            if (tiers.length === 0) { wrap.innerHTML = ''; return; }
+            const counts = selectedSeats.reduce((acc, c) => {
+                const sd = seatByCode[c]; if (!sd) return acc;
+                acc[sd.tierId] = (acc[sd.tierId] || 0) + 1; return acc;
+            }, {});
+            wrap.innerHTML = tiers.map(t => {
+                const need = requiredByTier[t];
+                const got = counts[t] || 0;
+                const ok = got === need;
+                return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.04);border:1px solid ${ok ? TIER_HEX[t] : 'rgba(239,68,68,0.4)'};border-radius:8px;padding:8px 12px;font-size:12px;">
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${TIER_HEX[t]};margin-right:8px;"></span><strong>${TIER_NAMES[t] || t}</strong></span>
+                    <span style="color:${ok ? '#10b981' : '#ef4444'};font-weight:800;">${got} / ${need}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function isSelectionValid() {
+            if (requiredSeats === 0) return false;
+            if (selectedSeats.length !== requiredSeats) return false;
+            const counts = {};
+            for (const c of selectedSeats) {
+                const sd = seatByCode[c];
+                if (!sd) return false;
+                counts[sd.tierId] = (counts[sd.tierId] || 0) + 1;
+            }
+            for (const t of Object.keys(requiredByTier)) {
+                if ((counts[t] || 0) !== requiredByTier[t]) return false;
+            }
+            for (const t of Object.keys(counts)) {
+                if (!requiredByTier[t]) return false;
+            }
+            return true;
+        }
+
+        function applySeatShading() {
+            const eligible = new Set(Object.keys(requiredByTier));
+            const need = requiredSeats;
+            const counts = selectedSeats.reduce((acc, c) => {
+                const sd = seatByCode[c]; if (!sd) return acc;
+                acc[sd.tierId] = (acc[sd.tierId] || 0) + 1; return acc;
+            }, {});
+            Object.entries(seatByCode).forEach(([code, sd]) => {
+                if (selectedSeats.includes(code)) { sd.mat.color.setHex(0x10b981); return; }
+                const seat = seatStatus[code];
+                if (seat && seat.status === 'assigned') {
+                    sd.mat.color.setHex(0x64748b);
+                    return;
+                }
+                if (eligible.has(sd.tierId)) {
+                    const tierNeed = requiredByTier[sd.tierId] || 0;
+                    const tierGot = counts[sd.tierId] || 0;
+                    sd.mat.color.setHex(tierGot >= tierNeed ? 0x475569 : TIER_COLORS[sd.tierId] || 0xffffff);
+                } else {
+                    sd.mat.color.setHex(0x1e293b);
+                }
+            });
         }
 
         function updateSelectedSeatsDisplay() {
             const list = document.getElementById('sel-seats-list');
-            list.innerHTML = selectedSeats.map(code => `<span class="seat-chip">${code}</span>`).join('');
+            list.innerHTML = selectedSeats.map(code => {
+                const sd = seatByCode[code];
+                const tierName = sd ? (TIER_NAMES[sd.tierId] || sd.tierId) : '';
+                return `<span class="seat-chip" style="background:${sd ? TIER_HEX[sd.tierId] : '#3b82f6'}33;color:${sd ? TIER_HEX[sd.tierId] : '#3b82f6'};">${code}${tierName ? ' · ' + tierName : ''}</span>`;
+            }).join('');
             document.getElementById('sel-picked-count').innerText = selectedSeats.length + '/' + requiredSeats;
-            document.getElementById('btn-save-assign').disabled = selectedSeats.length !== requiredSeats || requiredSeats === 0;
+            document.getElementById('btn-save-assign').disabled = !isSelectionValid();
+            renderTierProgress();
         }
 
         async function saveSeatAssignment() {
-            if (!selectedOrder || selectedSeats.length !== requiredSeats) { showToast('Phải chọn đúng ' + requiredSeats + ' ghế'); return; }
+            if (!isSelectionValid()) { showToast('Chổi hợp lệ ghế: cần đúng hạng & đủ số lượng'); return; }
             try {
                 const resp = await fetch(`/admin/api/orders/${selectedOrder.id}/assign`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -335,32 +739,87 @@
                 selectedOrder = null;
                 selectedSeats = [];
                 requiredSeats = 0;
+                requiredByTier = {};
                 document.getElementById('selected-order-info').style.display = 'none';
                 loadOrders();
                 loadSeatStatus();
             } catch (e) { showToast('Lỗi lưu phân ghế'); }
         }
 
+        function todayISO() { const d = new Date(); const pad=(n)=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+        function setStatsToday() { document.getElementById('stats-from').value = todayISO(); document.getElementById('stats-to').value = todayISO(); loadStats(); }
+        function setStatsAll() { document.getElementById('stats-from').value = ''; document.getElementById('stats-to').value = ''; loadStats(); }
+
         async function loadStats() {
             try {
-                const resp = await fetch('/api/seats');
-                const seats = await resp.json();
-                const tierCounts = { VIP: {total: 0, avail: 0, assigned: 0}, NEAR_VIP: {total: 0, avail: 0, assigned: 0}, STANDARD: {total: 0, avail: 0, assigned: 0}, LAST_ROW: {total: 0, avail: 0, assigned: 0} };
-                Object.values(seats).forEach(s => {
-                    tierCounts[s.tier_id] = tierCounts[s.tier_id] || {total:0,avail:0,assigned:0};
-                    tierCounts[s.tier_id].total++;
-                    if (s.status === 'available') tierCounts[s.tier_id].avail++;
-                    if (s.status === 'assigned') tierCounts[s.tier_id].assigned++;
-                });
-                const container = document.getElementById('tier-stats');
-                container.innerHTML = Object.entries(tierCounts).map(([id, c]) => `
-                    <div class="tier-stat-card">
-                        <div class="tier-name"><div class="tier-dot" style="background:${id === 'VIP' ? '#f59e0b' : id === 'NEAR_VIP' ? '#ef4444' : id === 'STANDARD' ? '#3b82f6' : '#ec4899'}"></div>${TIER_NAMES[id]}</div>
-                        <div class="numbers"><span>Tổng</span><span>${c.total}</span></div>
-                        <div class="numbers"><span class="available">Còn trống</span><span class="available">${c.avail}</span></div>
-                        <div class="numbers"><span class="assigned">Đã bán</span><span class="assigned">${c.assigned}</span></div>
-                    </div>`).join('');
-            } catch (e) {}
+                const from = document.getElementById('stats-from').value;
+                const to = document.getElementById('stats-to').value;
+                const qs = new URLSearchParams();
+                if (from) qs.set('from', from);
+                if (to) qs.set('to', to);
+                const resp = await fetch('/admin/api/stats?' + qs.toString());
+                const data = await resp.json();
+                document.getElementById('stat-total-revenue').innerText = (data.total_revenue || 0).toLocaleString('vi-VN') + ' đ';
+                document.getElementById('stat-total-orders').innerText = data.total_orders || 0;
+                const totalSeats = (data.seats_by_tier || []).reduce((s, r) => s + r.qty, 0);
+                document.getElementById('stat-total-seats').innerText = totalSeats;
+                const label = document.getElementById('stats-range-label');
+                label.innerText = from || to ? `Khoảng: ${from || '∞'} → ${to || '∞'}` : 'Tất cả thời gian';
+                const tbody = document.getElementById('stats-tier-tbody');
+                tbody.innerHTML = (data.seats_by_tier || []).map(r => {
+                    const pct = data.total_revenue ? ((r.revenue / data.total_revenue) * 100).toFixed(1) : 0;
+                    return `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:10px 0;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${r.color || '#3b82f6'};margin-right:8px;"></span><strong>${r.name}</strong></td>
+                        <td style="padding:10px 0;text-align:right;color:#cbd5e1;">${(r.price || 0).toLocaleString('vi-VN')} đ</td>
+                        <td style="padding:10px 0;text-align:right;font-weight:700;color:#38bdf8;">${r.qty}</td>
+                        <td style="padding:10px 0;text-align:right;font-weight:700;color:#10b981;">${(r.revenue || 0).toLocaleString('vi-VN')} đ</td>
+                        <td style="padding:10px 0;text-align:right;color:#94a3b8;">${pct}%</td>
+                    </tr>`;
+                }).join('') || '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:14px;">Chưa có dữ liệu</td></tr>';
+                drawDailyChart(data.daily_revenue || []);
+            } catch (e) { console.error(e); }
+        }
+
+        function drawDailyChart(rows) {
+            const canvas = document.getElementById('stats-daily-chart');
+            if (!canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
+            const cssH = 240;
+            canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+            canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, cssW, cssH);
+            if (rows.length === 0) {
+                ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('Chưa có dữ liệu trong khoảng này', cssW / 2, cssH / 2);
+                return;
+            }
+            const padding = { l: 60, r: 20, t: 20, b: 40 };
+            const w = cssW - padding.l - padding.r;
+            const h = cssH - padding.t - padding.b;
+            const max = Math.max(...rows.map(r => r.revenue), 1);
+            const barW = Math.max(8, Math.min(60, w / rows.length - 8));
+            ctx.font = '11px sans-serif';
+            rows.forEach((r, i) => {
+                const x = padding.l + (i + 0.5) * (w / rows.length) - barW / 2;
+                const barH = (r.revenue / max) * h;
+                const y = padding.t + h - barH;
+                const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+                grad.addColorStop(0, '#10b981'); grad.addColorStop(1, '#059669');
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, y, barW, barH);
+                ctx.fillStyle = '#cbd5e1'; ctx.textAlign = 'center';
+                ctx.fillText((r.revenue / 1000).toFixed(0) + 'k', x + barW / 2, y - 4);
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(r.day.slice(5), x + barW / 2, padding.t + h + 16);
+                ctx.font = '10px sans-serif';
+                ctx.fillText(`${r.orders}đ`, x + barW / 2, padding.t + h + 28);
+                ctx.font = '11px sans-serif';
+            });
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.beginPath(); ctx.moveTo(padding.l, padding.t + h); ctx.lineTo(padding.l + w, padding.t + h); ctx.stroke();
         }
 
         // 3D Chart for Admin
@@ -494,16 +953,23 @@
             try {
                 const resp = await fetch('/api/seats');
                 seatStatus = await resp.json();
+                if (selectedOrder) {
+                    applySeatShading();
+                } else {
+                    Object.entries(seatStatus).forEach(([code, seat]) => {
+                        const seatData = seatByCode[code];
+                        if (!seatData) return;
+                        const color = seat.status === 'assigned' ? 0x64748b : seat.status === 'held' ? 0x888888 : TIER_COLORS[seat.tier_id] || 0xffffff;
+                        seatData.mat.color.setHex(color);
+                    });
+                }
                 Object.entries(seatStatus).forEach(([code, seat]) => {
                     const seatData = seatByCode[code];
                     if (!seatData) return;
-                    if (!selectedSeats.includes(code)) {
-                        const color = seat.status === 'assigned' ? 0x64748b : seat.status === 'held' ? 0x888888 : TIER_COLORS[seat.tier_id] || 0xffffff;
-                        seatData.mat.color.setHex(color);
-                    }
                     setOccupiedRing(seatData, seat.status === 'assigned');
                 });
-            } catch (e) {}
+                return true;
+            } catch (e) { return false; }
         }
 
         const raycaster = new THREE.Raycaster();
@@ -578,15 +1044,29 @@
         function handleSeatClick(seatData) {
             if (!selectedOrder) { showToast('Chọn đơn hàng cần phân ghế trước'); return; }
             const seat = seatStatus[seatData.code];
-            if (seat && seat.status === 'assigned') { showToast('Ghế đã được phân'); return; }
+            const isAlreadyOwned = seat && seat.status === 'assigned' && seat.order_code === selectedOrder.code;
+            const isForeignAssigned = seat && seat.status === 'assigned' && !isAlreadyOwned;
+            if (isForeignAssigned) { showToast(`Ghế đã được phân cho đơn ${seat.order_code}`); return; }
             if (selectedSeats.includes(seatData.code)) {
                 selectedSeats = selectedSeats.filter(c => c !== seatData.code);
-                seatData.mat.color.setHex(TIER_COLORS[seatData.tierId] || 0xffffff);
             } else {
-                if (selectedSeats.length >= requiredSeats) { showToast('Đơn chỉ cần ' + requiredSeats + ' ghế'); return; }
+                if (!requiredByTier[seatData.tierId]) {
+                    const orderTiers = Object.keys(requiredByTier).map(t => TIER_NAMES[t] || t).join(', ');
+                    showToast(`Ghế này thuộc hạng ${TIER_NAMES[seatData.tierId] || seatData.tierId}. Đơn này chỉ cần: ${orderTiers}`);
+                    return;
+                }
+                const tierGot = selectedSeats.filter(c => seatByCode[c]?.tierId === seatData.tierId).length;
+                if (tierGot >= requiredByTier[seatData.tierId]) {
+                    showToast(`Đơn đã đủ ${requiredByTier[seatData.tierId]} ghế ${TIER_NAMES[seatData.tierId] || seatData.tierId}`);
+                    return;
+                }
+                if (selectedSeats.length >= requiredSeats) {
+                    showToast('Đơn chỉ cần ' + requiredSeats + ' ghế');
+                    return;
+                }
                 selectedSeats.push(seatData.code);
-                seatData.mat.color.setHex(0x10b981);
             }
+            applySeatShading();
             updateSelectedSeatsDisplay();
         }
 
@@ -844,6 +1324,11 @@
         setInterval(loadOrders, 5000);
         setInterval(loadSeatStatus, 5000);
         setInterval(loadOverviewStatus, 8000);
+
+        document.querySelectorAll('.filter-status-cb').forEach(c => { if (c.value === 'cancelled') c.checked = false; });
+        document.getElementById('sort-by').value = 'created_desc';
+        document.getElementById('stats-from').value = todayISO();
+        document.getElementById('stats-to').value = todayISO();
     </script>
 </body>
 </html>

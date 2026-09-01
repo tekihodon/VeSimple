@@ -24,5 +24,14 @@
     "hotline": "0916206529",
     "email": "ntn2906@gmail.com",
     "holdMinutes": 30
+  },
+  "show": {
+    "title": "SHOW ÂM NHẠC LIVE BAND",
+    "subtitle": "9 Giờ Kém 15 — Live Band đêm 17/10/2026",
+    "banner": "/static/banner.jpg",
+    "items": [
+      { "time": "19:30", "title": "Mở cửa check-in", "desc": "Đón khách, phát vé, chụp ảnh tại sảnh." },
+      { "time": "20:45", "title": "Live Band chính", "desc": "Setlist chính của đêm diễn." }
+    ]
   }
 }

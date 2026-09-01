@@ -7,7 +7,9 @@ from services.tiers import get_all_tiers, get_tier_stats
 from services.seats import get_seats, get_seats_for_chart, assign_seats, get_seats_overview
 from services.orders import (
     create_order, get_order, get_pending_orders, get_all_orders,
-    assign_seats_to_order, mark_paid, cancel_order
+    assign_seats_to_order, reassign_seats_to_order, mark_paid, cancel_order,
+    restore_order, edit_order, delete_orders, validate_seats_for_items,
+    get_stats
 )
 from services.vietqr import get_or_generate_qr, get_vietqr_url
 from services.auth import login_admin, logout_admin, admin_required, check_admin_auth
@@ -69,6 +71,7 @@ def index():
     return render_template('index.html',
                            config=config,
                            event=config.get('event', {}),
+                           show=config.get('show', {}),
                            tiers=get_all_tiers())
 
 @app.route('/api/tiers')
@@ -187,6 +190,13 @@ def admin_api_orders():
 def admin_api_seats_overview():
     return jsonify(get_seats_overview())
 
+@app.route('/admin/api/stats')
+@admin_required
+def admin_api_stats():
+    date_from = request.args.get('from') or None
+    date_to = request.args.get('to') or None
+    return jsonify(get_stats(date_from, date_to))
+
 @app.route('/admin/api/orders/<int:order_id>/assign', methods=['POST'])
 @admin_required
 def admin_assign_seats(order_id):
@@ -195,16 +205,21 @@ def admin_assign_seats(order_id):
     order = get_order(order_id=order_id)
     if not order:
         return jsonify({'error': 'Order not found'}), 404
+    if order['status'] == 'cancelled':
+        return jsonify({'ok': False, 'error': 'Đơn đã bị hủy, không thể phân ghế'}), 400
     items = order['items']
     if isinstance(items, str):
         try:
             items = json.loads(items)
         except (ValueError, TypeError):
             items = []
-    expected = sum(i.get('qty', 0) for i in items) if isinstance(items, list) else 0
-    if not seat_codes or len(seat_codes) != expected:
-        return jsonify({'ok': False, 'error': f'Đơn cần đúng {expected} ghế'}), 400
-    assigned = assign_seats_to_order(order_id, seat_codes)
+    validation = validate_seats_for_items(seat_codes, items)
+    if not validation.get('ok'):
+        return jsonify(validation), 400
+    if order['status'] == 'assigned':
+        assigned = reassign_seats_to_order(order_id, seat_codes)
+    else:
+        assigned = assign_seats_to_order(order_id, seat_codes)
     return jsonify({'ok': True, 'order': assigned})
 
 @app.route('/admin/api/orders/<int:order_id>/cancel', methods=['POST'])
@@ -215,6 +230,34 @@ def admin_cancel_order(order_id):
         return jsonify({'error': 'Order not found'}), 404
     return jsonify({'ok': True, 'status': order['status']})
 
+@app.route('/admin/api/orders/<int:order_id>/restore', methods=['POST'])
+@admin_required
+def admin_restore_order(order_id):
+    order = restore_order(order_id)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    return jsonify({'ok': True, 'status': order['status']})
+
+@app.route('/admin/api/orders/<int:order_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_order(order_id):
+    data = request.get_json(silent=True) or {}
+    items = data.get('items')
+    total = None
+    if isinstance(items, list):
+        total = sum(int(i.get('price', 0)) * int(i.get('qty', 0)) for i in items)
+    order = edit_order(
+        order_id,
+        full_name=(data.get('full_name') or None),
+        phone=(data.get('phone') or None),
+        email=(data.get('email') or None),
+        items=items,
+        total=total,
+    )
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    return jsonify({'ok': True, 'order': order})
+
 @app.route('/admin/api/orders/<int:order_id>/mark-paid', methods=['POST'])
 @admin_required
 def admin_mark_paid(order_id):
@@ -222,6 +265,28 @@ def admin_mark_paid(order_id):
     if not order:
         return jsonify({'error': 'Order not found'}), 404
     return jsonify({'ok': True, 'status': order['status']})
+
+@app.route('/admin/api/orders/delete', methods=['POST'])
+@admin_required
+def admin_delete_orders():
+    data = request.get_json(silent=True) or {}
+    ids = data.get('ids') or []
+    if not isinstance(ids, list) or not ids:
+        return jsonify({'ok': False, 'error': 'Vui lòng chọn ít nhất 1 đơn'}), 400
+    try:
+        ids = [int(x) for x in ids]
+    except (TypeError, ValueError):
+        return jsonify({'ok': False, 'error': 'ID đơn không hợp lệ'}), 400
+    deleted = delete_orders(ids)
+    return jsonify({'ok': True, 'deleted': deleted})
+
+@app.route('/admin/api/orders/<int:order_id>', methods=['DELETE'])
+@admin_required
+def admin_delete_order(order_id):
+    deleted = delete_orders([order_id])
+    if not deleted:
+        return jsonify({'ok': False, 'error': 'Order not found'}), 404
+    return jsonify({'ok': True, 'deleted': deleted})
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
