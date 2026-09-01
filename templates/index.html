@@ -140,60 +140,53 @@
             .disclaimer-banner { top: 65px; padding: 6px 12px; border-radius: 12px; } .disclaimer-banner .text { font-size: 11px; }
             .view-controls {
                 position: fixed;
+                bottom: 16px;
+                right: 16px;
                 z-index: 50;
                 background: rgba(15,23,42,0.92);
                 backdrop-filter: blur(16px);
                 border: 1px solid rgba(255,255,255,0.12);
-                border-radius: 999px;
-                flex-direction: column;
-                overflow: hidden;
-                max-height: 52px;
-                transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                            border-radius 0.35s,
-                            box-shadow 0.3s;
+                border-radius: 24px;
                 box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-                cursor: grab;
-                touch-action: none;
+                overflow: hidden;
+                cursor: pointer;
+                transition: box-shadow 0.2s;
             }
-            .view-controls.expanded {
-                max-height: 340px;
-                border-radius: 20px;
-                cursor: default;
-            }
-            .view-controls:active { cursor: grabbing; }
-            .view-controls .btn-view {
-                width: 100%;
-                border-radius: 0;
-                padding: 12px 20px;
-                font-size: 13px;
-                text-align: left;
-                white-space: nowrap;
-                border: none;
-                background: transparent;
-            }
-            .view-controls .btn-view:first-child { border-radius: 999px 999px 0 0; }
-            .view-controls .btn-view:last-child { border-radius: 0 0 999px 999px; }
-            .view-controls .btn-view:hover { background: rgba(255,255,255,0.08); }
-            .view-controls .btn-view.active {
-                background: rgba(245,158,11,0.25) !important;
-                color: #f59e0b !important;
-                font-weight: 800;
-            }
-            .view-controls .drag-hint {
+            .view-controls:active { box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+            .vc-header {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 10px 16px 6px;
-                font-size: 11px;
-                color: #64748b;
-                cursor: grab;
+                padding: 12px 18px;
+                gap: 12px;
+                user-select: none;
             }
-            .view-controls .drag-hint::after {
-                content: '⋮⋮';
-                letter-spacing: -2px;
-                font-size: 14px;
+            #vc-active-label { font-size: 13px; font-weight: 700; color: #fff; }
+            #vc-arrow { font-size: 10px; color: #94a3b8; transition: transform 0.25s; }
+            .view-controls.vc-open #vc-arrow { transform: rotate(180deg); }
+            .vc-menu {
+                display: none;
+                flex-direction: column;
+                border-top: 1px solid rgba(255,255,255,0.08);
             }
-            .view-controls .drag-hint + .btn-view { padding-top: 4px; }
+            .view-controls.vc-open .vc-menu { display: flex; }
+            .vc-menu .btn-view {
+                width: 100%;
+                padding: 11px 18px;
+                font-size: 13px;
+                text-align: left;
+                border-radius: 0;
+                border: none;
+                background: transparent;
+                color: #cbd5e1;
+                font-weight: 500;
+            }
+            .vc-menu .btn-view:hover { background: rgba(255,255,255,0.06); color: #fff; }
+            .vc-menu .btn-view.active {
+                background: rgba(245,158,11,0.2);
+                color: #f59e0b;
+                font-weight: 800;
+            }
             .legend-card { position: fixed; bottom: 0; left: 0; width: 100vw; border-radius: 20px 20px 0 0; padding: 14px; background: rgba(15,23,42,0.95); transform: translateY(calc(100% - 48px)); transition: transform 0.3s; }
             .legend-card.expanded { transform: translateY(0); }
             .legend-toggle-bar { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -266,11 +259,17 @@
     </div>
 
     <div class="view-controls" id="view-controls">
-        <button class="btn-view" id="btn-view-overview" onclick="setCameraView('overview', this)">Tổng Quan</button>
-        <button class="btn-view active" id="btn-view-show" onclick="setCameraView('show', this)">Chương trình</button>
-        <button class="btn-view" id="btn-view-stage" onclick="setCameraView('stage', this)">Sân Khấu</button>
-        <button class="btn-view" id="btn-view-vip" onclick="setCameraView('vip', this)">Khu VIP</button>
-        <button class="btn-view" id="btn-view-top" onclick="setCameraView('top', this)">Toàn Cảnh</button>
+        <div class="vc-header" id="vc-header" onclick="toggleViewControls()">
+            <span id="vc-active-label">Chương trình</span>
+            <span id="vc-arrow">▼</span>
+        </div>
+        <div class="vc-menu" id="vc-menu">
+            <button class="btn-view" onclick="setCameraView('overview', this)">Tổng Quan</button>
+            <button class="btn-view active" onclick="setCameraView('show', this)">Chương trình</button>
+            <button class="btn-view" onclick="setCameraView('stage', this)">Sân Khấu</button>
+            <button class="btn-view" onclick="setCameraView('vip', this)">Khu VIP</button>
+            <button class="btn-view" onclick="setCameraView('top', this)">Toàn Cảnh</button>
+        </div>
     </div>
 
     <div class="legend-card" id="legend-card">
@@ -593,12 +592,16 @@
 
         function setupInteraction() {
             window.addEventListener('pointermove',e=>{ mouse.x=(e.clientX/window.innerWidth)*2-1; mouse.y=-(e.clientY/window.innerHeight)*2+1; tooltip.style.left=e.clientX+'px'; tooltip.style.top=e.clientY+'px'; raycastTier(); });
-            let isDragging=false;
-            window.addEventListener('pointerdown',()=>isDragging=false);
-            window.addEventListener('pointermove',()=>isDragging=true);
+            let dragStartX=0, dragStartY=0, isDragging=false;
+            window.addEventListener('pointerdown',e=>{ dragStartX=e.clientX; dragStartY=e.clientY; isDragging=false; });
+            window.addEventListener('pointermove',e=>{ if(Math.hypot(e.clientX-dragStartX,e.clientY-dragStartY)>8) isDragging=true; });
             window.addEventListener('pointerup',e=>{
-                if(isDragging) return;
-                if(e.target.closest('.legend-card')||e.target.closest('.cart-card')||e.target.closest('.view-controls')||e.target.closest('.modal-overlay')) return;
+                if(isDragging){ isDragging=false; return; }
+                if(e.target.closest('.legend-card')) return;
+                if(e.target.closest('.cart-card')) return;
+                if(e.target.closest('.modal-overlay')) return;
+                const vc = document.getElementById('view-controls');
+                if(vc && vc.contains(e.target)) return;
                 raycaster.setFromCamera(mouse,camera);
                 const intersects = raycaster.intersectObjects(seatObjects);
                 if(intersects.length>0){ const sd=intersects[0].object.userData; if(sd&&sd.tier) openBuyModal(sd.tier.id); }
@@ -615,6 +618,12 @@
         }
 const cameraPresets = { overview:{pos:[0,38,52],target:[0,2,5]}, show:{pos:[0,7.2,-11.8],target:[0,6.2,-21.8]}, stage:{pos:[0,6,-18],target:[0,8,12]}, vip:{pos:[0,14,18],target:[0,2,-12]}, top:{pos:[0,65,2],target:[0,0,0]} };
 
+        function toggleViewControls() {
+            const vc = document.getElementById('view-controls');
+            if (!vc) return;
+            vc.classList.toggle('vc-open');
+        }
+
         function setCameraView(presetKey,btnElement){
             if(btnElement){ document.querySelectorAll('.btn-view').forEach(b=>b.classList.remove('active')); btnElement.classList.add('active'); }
             const showOverlay=document.getElementById('show-overlay');
@@ -622,63 +631,11 @@ const cameraPresets = { overview:{pos:[0,38,52],target:[0,2,5]}, show:{pos:[0,7.
             const p=cameraPresets[presetKey]; if(!p) return;
             gsap.to(camera.position,{x:p.pos[0],y:p.pos[1],z:p.pos[2],duration:1.2,ease:'power2.inOut'});
             gsap.to(controls.target,{x:p.target[0],y:p.target[1],z:p.target[2],duration:1.2,ease:'power2.inOut',onUpdate:()=>controls.update()});
-            collapseMobileViewControls();
-        }
-
-        function collapseMobileViewControls() {
             const vc = document.getElementById('view-controls');
-            if (vc) vc.classList.remove('expanded');
+            if (vc) vc.classList.remove('vc-open');
+            const activeLabel = document.getElementById('vc-active-label');
+            if (activeLabel) activeLabel.innerText = btnElement ? btnElement.innerText : presetKey;
         }
-
-        function expandMobileViewControls() {
-            const vc = document.getElementById('view-controls');
-            if (vc) vc.classList.add('expanded');
-        }
-
-        (function initMobileViewControls() {
-            const vc = document.getElementById('view-controls');
-            if (!vc) return;
-            const isMobile = () => window.innerWidth <= 768;
-
-            vc.addEventListener('click', (e) => {
-                if (!isMobile()) return;
-                if (e.target.classList.contains('btn-view')) return;
-                vc.classList.toggle('expanded');
-            });
-
-            if (!isMobile()) return;
-            let startX, startY, startLeft, startBottom;
-            let dragging = false;
-            let moved = false;
-
-            vc.addEventListener('pointerdown', (e) => {
-                if (!isMobile()) return;
-                if (e.target.classList.contains('btn-view')) return;
-                dragging = true;
-                moved = false;
-                const rect = vc.getBoundingClientRect();
-                startX = e.clientX; startY = e.clientY;
-                startLeft = rect.left; startBottom = window.innerHeight - rect.top;
-                vc.style.transition = 'none';
-                e.preventDefault();
-            });
-
-            window.addEventListener('pointermove', (e) => {
-                if (!dragging || !isMobile()) return;
-                const dx = e.clientX - startX;
-                const dy = startY - e.clientY;
-                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
-                const newLeft = Math.max(0, Math.min(window.innerWidth - vc.offsetWidth, startLeft + dx));
-                const newBottom = Math.max(60, Math.min(window.innerHeight - 60, startBottom + dy));
-                vc.style.position = 'fixed';
-                vc.style.left = newLeft + 'px';
-                vc.style.right = 'auto';
-                vc.style.top = 'auto';
-                vc.style.bottom = newBottom + 'px';
-            });
-
-            window.addEventListener('pointerup', () => { dragging = false; vc.style.transition = ''; });
-        })();
 
         window.addEventListener('resize',()=>{ if(!camera||!renderer) return; camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); });
 
