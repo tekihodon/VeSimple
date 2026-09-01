@@ -1,0 +1,39 @@
+{
+  "tiers": {
+    "VIP":        { "name": "Hạng Nở Hoa",     "desc": "A, B, C VIP",  "price": 400000, "color": "#f59e0b" },
+    "NEAR_VIP":   { "name": "Hạng Thức Tỉnh",  "desc": "Cận VIP",      "price": 350000, "color": "#ef4444" },
+    "STANDARD":   { "name": "Hạng Thanh Xuân",  "desc": "Tiêu Chuẩn",   "price": 300000, "color": "#3b82f6" },
+    "LAST_ROW":   { "name": "Hạng Tích Tắc",    "desc": "Hàng Cuối",    "price": 250000, "color": "#ec4899" }
+  },
+  "rows": [
+    { "id": "C1",  "tier": "VIP",      "side": "center", "count": 11, "z": -10.5, "spacing": 1.1 },
+    { "id": "C2",  "tier": "VIP",      "side": "center", "count": 13, "z": -8.8,  "spacing": 1.1 },
+    { "id": "C3",  "tier": "VIP",      "side": "center", "count": 14, "z": -7.1,  "spacing": 1.1 },
+    { "id": "C4",  "tier": "VIP",      "side": "center", "count": 14, "z": -5.4,  "spacing": 1.1 },
+    { "id": "C5",  "tier": "NEAR_VIP", "side": "center", "count": 17, "z": -3.5,  "spacing": 1.08 },
+    { "id": "C6",  "tier": "NEAR_VIP", "side": "center", "count": 19, "z": -1.7,  "spacing": 1.08 },
+    { "id": "C7",  "tier": "NEAR_VIP", "side": "center", "count": 12, "z":  0.2,  "spacing": 1.08, "split": 6, "gap": 2.2 },
+    { "id": "C8",  "tier": "NEAR_VIP", "side": "center", "count": 12, "z":  2.1,  "spacing": 1.08, "split": 6, "gap": 2.2 },
+    { "id": "C9",  "tier": "NEAR_VIP", "side": "center", "count": 12, "z":  4.0,  "spacing": 1.08, "split": 6, "gap": 2.2 },
+    { "id": "L1",  "tier": "NEAR_VIP", "side": "left",   "count": 3,  "z": -11.5, "spacing": 1.05 },
+    { "id": "L2",  "tier": "NEAR_VIP", "side": "left",   "count": 5,  "z": -9.8,  "spacing": 1.05 },
+    { "id": "L3",  "tier": "NEAR_VIP", "side": "left",   "count": 7,  "z": -8.0,  "spacing": 1.05 },
+    { "id": "L4",  "tier": "NEAR_VIP", "side": "left",   "count": 8,  "z": -6.2,  "spacing": 1.05 },
+    { "id": "L5",  "tier": "STANDARD", "side": "left",   "count": 8,  "z": -4.2,  "spacing": 1.05 },
+    { "id": "L6",  "tier": "STANDARD", "side": "left",   "count": 11, "z": -2.2,  "spacing": 1.05 },
+    { "id": "L7",  "tier": "STANDARD", "side": "left",   "count": 8,  "z":  0.0,  "spacing": 1.05 },
+    { "id": "L8",  "tier": "STANDARD", "side": "left",   "count": 8,  "z":  2.0,  "spacing": 1.05 },
+    { "id": "L9",  "tier": "STANDARD", "side": "left",   "count": 8,  "z":  4.0,  "spacing": 1.05 },
+    { "id": "L10", "tier": "LAST_ROW", "side": "left",   "count": 8,  "z":  6.2,  "spacing": 1.05 },
+    { "id": "R1",  "tier": "NEAR_VIP", "side": "right",  "count": 3,  "z": -11.5, "spacing": 1.05 },
+    { "id": "R2",  "tier": "NEAR_VIP", "side": "right",  "count": 5,  "z": -9.8,  "spacing": 1.05 },
+    { "id": "R3",  "tier": "NEAR_VIP", "side": "right",  "count": 7,  "z": -8.0,  "spacing": 1.05 },
+    { "id": "R4",  "tier": "NEAR_VIP", "side": "right",  "count": 8,  "z": -6.2,  "spacing": 1.05 },
+    { "id": "R5",  "tier": "STANDARD", "side": "right",  "count": 8,  "z": -4.2,  "spacing": 1.05 },
+    { "id": "R6",  "tier": "STANDARD", "side": "right",  "count": 11, "z": -2.2,  "spacing": 1.05 },
+    { "id": "R7",  "tier": "STANDARD", "side": "right",  "count": 8,  "z":  0.0,  "spacing": 1.05 },
+    { "id": "R8",  "tier": "STANDARD", "side": "right",  "count": 8,  "z":  2.0,  "spacing": 1.05 },
+    { "id": "R9",  "tier": "STANDARD", "side": "right",  "count": 8,  "z":  4.0,  "spacing": 1.05 },
+    { "id": "R10", "tier": "LAST_ROW", "side": "right",  "count": 8,  "z":  6.2,  "spacing": 1.05 }
+  ]
+}

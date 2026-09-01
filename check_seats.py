@@ -1,0 +1,15 @@
+import sys, os
+sys.path.insert(0, '.')
+from services.db import query
+seats = query("SELECT code, tier_id, row_id FROM \"9hkem15_seats\" ORDER BY row_id, code LIMIT 30")
+for s in seats: print(s)
+print('---total---', query("SELECT COUNT(*) AS c FROM \"9hkem15_seats\"", one=True))
+print('---sample wing L---')
+seats = query("SELECT code, tier_id, row_id FROM \"9hkem15_seats\" WHERE row_id LIKE 'L%' ORDER BY code LIMIT 6")
+for s in seats: print(s)
+print('---sample wing R---')
+seats = query("SELECT code, tier_id, row_id FROM \"9hkem15_seats\" WHERE row_id LIKE 'R%' ORDER BY code LIMIT 6")
+for s in seats: print(s)
+print('---LAST_ROW---')
+seats = query("SELECT code, tier_id, row_id FROM \"9hkem15_seats\" WHERE tier_id='LAST_ROW' ORDER BY code LIMIT 6")
+for s in seats: print(s)

@@ -1,0 +1,14 @@
+services:
+  veapp:
+    image: tekihodon/vesimple:1.0.0
+    container_name: veapp
+    restart: unless-stopped
+    ports:
+      - "${VESIMPLE_PORT:-3333}:3333"
+    volumes:
+      # Mount config.json thật vào container (chứa DB connection string cố định tới Supabase)
+      # Nếu thiếu file này trên host, Docker sẽ tạo MỘT THƯ MỤC tên config.json
+      # → app crash. Phải tạo file config.json trên host TRƯỚC khi `docker compose up`.
+      - ./config.json:/app/config.json:ro
+      # Lưu QR sinh ra ngoài container (cache VietQR). Thư mục static/qr phải tồn tại trên host.
+      - ./static/qr:/app/static/qr

@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - 9 Giờ Kém 15</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #0f172a; color: #fff; min-height: 100vh; }
+        .admin-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: #1e293b; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); }
+        .sidebar h1 { font-size: 16px; font-weight: 800; margin-bottom: 8px; color: #f59e0b; }
+        .sidebar .subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 24px; }
+        .nav-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 24px; }
+        .stat-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; }
+        .stat-card .value { font-size: 24px; font-weight: 800; color: #38bdf8; }
+        .stat-card .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-top: 4px; }
+        .main-content { flex: 1; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header h2 { font-size: 20px; font-weight: 700; }
+        .btn-logout { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-logout:hover { background: rgba(239,68,68,0.3); }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .orders-table { width: 100%; border-collapse: collapse; background: rgba(15,23,42,0.8); border-radius: 12px; overflow: hidden; }
+        .orders-table th { background: rgba(255,255,255,0.05); padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+        .orders-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .orders-table tr:hover { background: rgba(255,255,255,0.02); }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .status-pending { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .status-paid { background: rgba(16,185,129,0.2); color: #10b981; }
+        .status-assigned { background: rgba(59,130,246,0.2); color: #3b82f6; }
+        .status-cancelled { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .btn-action { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; margin-right: 4px; }
+        .btn-approve { background: #10b981; color: #fff; }
+        .btn-assign { background: #3b82f6; color: #fff; }
+        .btn-cancel { background: #ef4444; color: #fff; }
+        .tier-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .tier-stat-card { background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .tier-stat-card .tier-name { font-size: 14px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .tier-stat-card .tier-dot { width: 12px; height: 12px; border-radius: 4px; }
+        .tier-stat-card .numbers { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; }
+        .tier-stat-card .numbers span { font-weight: 700; }
+        .tier-stat-card .available { color: #10b981; }
+        .tier-stat-card .assigned { color: #3b82f6; }
+        #chart-container { height: 70vh; background: rgba(15,23,42,0.8); border-radius: 16px; margin-bottom: 20px; position: relative; }
+        #webgl-canvas { width: 100%; height: 100%; cursor: grab; }
+        #seat-tooltip { position: absolute; display: none; background: rgba(15,23,42,0.95); border: 1px solid #f59e0b; color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; pointer-events: none; z-index: 10; white-space: nowrap; }
+        #overview-tooltip { position: absolute; display: none; background: rgba(15,23,42,0.95); border: 1px solid #22d3ee; color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; pointer-events: none; z-index: 10; white-space: nowrap; }
+        #overview-chart-container { height: 80vh; background: rgba(15,23,42,0.8); border-radius: 16px; position: relative; }
+        #overview-canvas { width: 100%; height: 100%; cursor: grab; }
+        .assign-panel { background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .assign-panel h3 { font-size: 16px; margin-bottom: 16px; }
+        .selected-order { background: rgba(245,158,11,0.1); border-radius: 8px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(245,158,11,0.3); }
+        .selected-order p { font-size: 13px; margin-bottom: 6px; }
+        .selected-order strong { color: #f59e0b; }
+        .selected-seats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .seat-chip { background: rgba(59,130,246,0.2); color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .btn-save-assign { background: linear-gradient(135deg,#10b981,#059669); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+        .btn-save-assign:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .order-detail-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .order-detail-modal.active { display: flex; }
+        .modal-content { background: #1e293b; border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 18px; }
+        .btn-close { background: rgba(255,255,255,0.1); border: none; color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .detail-row .label { color: #94a3b8; }
+        .detail-row .value { font-weight: 600; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 13px; font-weight: 600; z-index: 2000; transition: transform 0.3s; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        @media (max-width: 1024px) { .admin-layout { flex-direction: column; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); } .tier-stats { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="sidebar">
+            <h1>🎫 9 Giờ Kém 15</h1>
+            <p class="subtitle">Admin Dashboard</p>
+            <div class="nav-item active" data-panel="orders" onclick="showPanel('orders')">📋 Đơn hàng</div>
+            <div class="nav-item" data-panel="overview" onclick="showPanel('overview')">🗺 Tổng quan ghế</div>
+            <div class="nav-item" data-panel="seats" onclick="showPanel('seats')">🪑 Phân ghế</div>
+            <div class="nav-item" data-panel="stats" onclick="showPanel('stats')">📊 Thống kê</div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="value" id="stat-pending">0</div><div class="label">Chờ TT</div></div>
+                <div class="stat-card"><div class="value" id="stat-paid">0</div><div class="label">Đã TT</div></div>
+                <div class="stat-card"><div class="value" id="stat-assigned">0</div><div class="label">Đã gửi ghế</div></div>
+                <div class="stat-card"><div class="value" id="stat-revenue">0</div><div class="label">Doanh thu</div></div>
+            </div>
+            <div style="margin-top: auto; padding-top: 20px;">
+                <a href="/admin/logout"><button class="btn-logout">Đăng xuất</button></a>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h2>Quản lý đơn hàng</h2>
+                <button onclick="loadOrders()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;">🔄 Làm mới</button>
+            </div>
+            
+            <div class="panel active" id="panel-orders">
+                <table class="orders-table">
+                    <thead><tr><th>Mã ĐH</th><th>Khách hàng</th><th>SL</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                    <tbody id="orders-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="panel" id="panel-overview">
+                <div id="overview-chart-container">
+                    <canvas id="overview-canvas"></canvas>
+                    <div id="overview-tooltip"></div>
+                </div>
+                <p style="font-size:12px;color:#94a3b8;margin-top:12px;">Hover vào ghế đã mua để xem tên khách. Toàn bộ ghế trong đơn sẽ được khoanh tròn.</p>
+            </div>
+
+            <div class="panel" id="panel-seats">
+                <div id="chart-container">
+                    <canvas id="webgl-canvas"></canvas>
+                    <div id="seat-tooltip"></div>
+                </div>
+                <div class="assign-panel">
+                    <h3>Phân ghế cho đơn hàng</h3>
+                    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px;">Chọn một đơn hàng đã thanh toán bên dưới, sau đó click vào ghế trên sơ đồ để chọn.</p>
+                    <div id="selected-order-info" style="display:none;">
+                        <div class="selected-order">
+                            <p><strong>Đơn hàng:</strong> <span id="sel-order-code"></span></p>
+                            <p><strong>Khách:</strong> <span id="sel-order-name"></span></p>
+                            <p><strong>Cần phân:</strong> <span id="sel-order-qty"></span> ghế</p>
+                            <p><strong>Đã chọn:</strong> <span id="sel-picked-count" style="color:#38bdf8;font-weight:700;">0/0</span></p>
+                            <div class="selected-seats" id="sel-seats-list"></div>
+                        </div>
+                        <button class="btn-save-assign" id="btn-save-assign" onclick="saveSeatAssignment()">✓ Lưu phân ghế</button>
+                    </div>
+                    <div style="margin-top:20px;">
+                        <h4 style="font-size:13px;color:#94a3b8;margin-bottom:12px;">Đơn hàng đã thanh toán (chờ phân ghế):</h4>
+                        <div id="paid-orders-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" id="panel-stats">
+                <div class="tier-stats" id="tier-stats"></div>
+                <h3 style="font-size:16px;margin-bottom:16px;">Chi tiết theo hàng ghế</h3>
+                <div id="row-stats" style="background:rgba(15,23,42,0.8);border-radius:12px;padding:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="order-detail-modal" id="order-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Chi tiết đơn hàng</h3>
+                <button class="btn-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-body"></div>
+            <div style="margin-top:20px;display:flex;gap:8px;" id="modal-actions"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let orders = [];
+        let selectedOrder = null;
+        let selectedSeats = [];
+        let requiredSeats = 0;
+        let scene, camera, renderer, controls;
+        let seatObjects = [];
+        let seatByCode = {};
+        let seatStatus = {};
+        let overviewScene, overviewCamera, overviewRenderer, overviewControls;
+        let overviewSeatObjects = [];
+        let overviewSeatByCode = {};
+        let overviewSeatStatus = {};
+
+        const TIER_COLORS = { VIP: 0xf59e0b, NEAR_VIP: 0xef4444, STANDARD: 0x3b82f6, LAST_ROW: 0xec4899 };
+        const TIER_NAMES = { VIP: 'Hạng Nở Hoa', NEAR_VIP: 'Hạng Thức Tỉnh', STANDARD: 'Hạng Thanh Xuân', LAST_ROW: 'Hạng Tích Tắc' };
+
+        function parseItems(items) {
+            if (Array.isArray(items)) return items;
+            try { return JSON.parse(items || '[]'); } catch (e) { return []; }
+        }
+
+        function showPanel(name) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('panel-' + name).classList.add('active');
+            const nav = document.querySelector('.nav-item[data-panel="' + name + '"]');
+            if (nav) nav.classList.add('active');
+            if (name === 'seats' && !scene) initChart();
+            if (name === 'overview' && !overviewScene) initOverviewChart();
+            if (name === 'stats') loadStats();
+        }
+
+        async function loadOrders() {
+            try {
+                const resp = await fetch('/admin/api/orders');
+                orders = await resp.json();
+                renderOrders();
+                renderPaidOrdersList();
+                updateStats();
+            } catch (e) { showToast('Lỗi tải đơn hàng'); }
+        }
+
+        function renderOrders() {
+            const tbody = document.getElementById('orders-tbody');
+            tbody.innerHTML = orders.map(o => `
+                <tr>
+                    <td style="font-weight:700;color:#f59e0b;">${o.code}</td>
+                    <td><div>${o.full_name}</div><div style="font-size:11px;color:#94a3b8;">${o.phone}</div></td>
+                    <td>${parseItems(o.items).reduce((s,i) => s + i.qty, 0)}</td>
+                    <td style="font-weight:700;">${(o.total || 0).toLocaleString('vi-VN')} đ</td>
+                    <td><span class="status-badge status-${o.status}">${getStatusText(o.status)}</span></td>
+                    <td>
+                        <button class="btn-action btn-approve" onclick="showOrderDetail(${o.id})">Chi tiết</button>
+                        ${o.status === 'pending_payment' ? `<button class="btn-action btn-approve" onclick="markPaid(${o.id})">Duyệt TT</button>` : ''}
+                        ${o.status === 'paid' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân ghế</button>` : ''}
+                        ${o.status !== 'cancelled' && o.status !== 'assigned' ? `<button class="btn-action btn-cancel" onclick="cancelOrder(${o.id})">Hủy</button>` : ''}
+                    </td>
+                </tr>`).join('');
+        }
+
+        function renderPaidOrdersList() {
+            const paid = orders.filter(o => o.status === 'paid');
+            const list = document.getElementById('paid-orders-list');
+            list.innerHTML = paid.map(o => {
+                const items = parseItems(o.items);
+                const totalSeats = items.reduce((s, i) => s + i.qty, 0);
+                return `<div onclick="selectForAssign(${o.id})" style="background:rgba(15,23,42,0.8);border-radius:8px;padding:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <div><span style="font-weight:700;color:#f59e0b;">${o.code}</span> — ${o.full_name} <span style="color:#94a3b8;font-size:12px;">(${totalSeats} ghế)</span></div>
+                    <span style="font-size:11px;color:#3b82f6;">Click để phân →</span>
+                </div>`;
+            }).join('') || '<p style="color:#94a3b8;font-size:13px;">Không có đơn hàng nào chờ phân ghế.</p>';
+        }
+
+        function getStatusText(status) {
+            const texts = { pending_payment: 'Chờ TT', paid: 'Đã TT', assigned: 'Đã gửi ghế', cancelled: 'Đã hủy' };
+            return texts[status] || status;
+        }
+
+        function updateStats() {
+            const pending = orders.filter(o => o.status === 'pending_payment').length;
+            const paid = orders.filter(o => o.status === 'paid').length;
+            const assigned = orders.filter(o => o.status === 'assigned').length;
+            const revenue = orders.filter(o => o.status === 'assigned' || o.status === 'paid').reduce((s, o) => s + (o.total || 0), 0);
+            document.getElementById('stat-pending').innerText = pending;
+            document.getElementById('stat-paid').innerText = paid;
+            document.getElementById('stat-assigned').innerText = assigned;
+            document.getElementById('stat-revenue').innerText = revenue >= 1000000 ? (revenue / 1000000).toFixed(1) + 'M' : revenue.toLocaleString('vi-VN');
+        }
+
+        async function showOrderDetail(id) {
+            const o = orders.find(x => x.id === id);
+            if (!o) return;
+            const items = parseItems(o.items);
+            document.getElementById('modal-body').innerHTML = `
+                <div class="detail-row"><span class="label">Mã đơn</span><span class="value" style="color:#f59e0b;">${o.code}</span></div>
+                <div class="detail-row"><span class="label">Khách hàng</span><span class="value">${o.full_name}</span></div>
+                <div class="detail-row"><span class="label">SĐT</span><span class="value">${o.phone}</span></div>
+                <div class="detail-row"><span class="label">Email</span><span class="value">${o.email}</span></div>
+                <div class="detail-row"><span class="label">Ngày tạo</span><span class="value">${new Date(o.created_at).toLocaleString('vi-VN')}</span></div>
+                <div class="detail-row"><span class="label">Trạng thái</span><span class="status-badge status-${o.status}">${getStatusText(o.status)}</span></div>
+                <div style="margin-top:16px;"><strong style="font-size:12px;color:#94a3b8;">VÉ ĐÃ ĐẶT:</strong></div>
+                ${items.map(i => `<div class="detail-row"><span class="label">${i.name || i.tier}</span><span class="value">x${i.qty} — ${(i.price * i.qty).toLocaleString('vi-VN')} đ</span></div>`).join('')}
+                <div class="detail-row" style="margin-top:8px;border-top:2px solid rgba(255,255,255,0.1);padding-top:12px;"><span class="label">TỔNG CỘNG</span><span class="value" style="color:#10b981;font-size:16px;">${(o.total || 0).toLocaleString('vi-VN')} đ</span></div>`;
+            let actions = '';
+            if (o.status === 'pending_payment') actions += '<button class="btn-action btn-approve" onclick="markPaid(' + id + ')">✓ Duyệt thanh toán</button>';
+            if (o.status === 'paid') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">📍 Phân ghế</button>';
+            if (o.status !== 'cancelled' && o.status !== 'assigned') actions += '<button class="btn-action btn-cancel" onclick="cancelOrder(' + id + ')">✕ Hủy đơn</button>';
+            document.getElementById('modal-actions').innerHTML = actions;
+            document.getElementById('order-modal').classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('order-modal').classList.remove('active'); }
+
+        async function markPaid(id) {
+            try {
+                await fetch(`/admin/api/orders/${id}/mark-paid`, { method: 'POST' });
+                showToast('Đã duyệt thanh toán');
+                loadOrders();
+                closeModal();
+            } catch (e) { showToast('Lỗi'); }
+        }
+
+        async function cancelOrder(id) {
+            if (!confirm('Hủy đơn hàng này?')) return;
+            try {
+                await fetch(`/admin/api/orders/${id}/cancel`, { method: 'POST' });
+                showToast('Đã hủy đơn');
+                loadOrders();
+                closeModal();
+            } catch (e) { showToast('Lỗi'); }
+        }
+
+        function selectForAssign(id) {
+            const o = orders.find(x => x.id === id);
+            if (!o) return;
+            selectedOrder = o;
+            selectedSeats = [];
+            const items = parseItems(o.items);
+            const totalSeats = items.reduce((s, i) => s + i.qty, 0);
+            requiredSeats = totalSeats;
+            document.getElementById('selected-order-info').style.display = 'block';
+            document.getElementById('sel-order-code').innerText = o.code;
+            document.getElementById('sel-order-name').innerText = o.full_name;
+            document.getElementById('sel-order-qty').innerText = totalSeats;
+            updateSelectedSeatsDisplay();
+            document.getElementById('btn-save-assign').disabled = true;
+            if (!document.getElementById('panel-seats').classList.contains('active')) showPanel('seats');
+        }
+
+        function updateSelectedSeatsDisplay() {
+            const list = document.getElementById('sel-seats-list');
+            list.innerHTML = selectedSeats.map(code => `<span class="seat-chip">${code}</span>`).join('');
+            document.getElementById('sel-picked-count').innerText = selectedSeats.length + '/' + requiredSeats;
+            document.getElementById('btn-save-assign').disabled = selectedSeats.length !== requiredSeats || requiredSeats === 0;
+        }
+
+        async function saveSeatAssignment() {
+            if (!selectedOrder || selectedSeats.length !== requiredSeats) { showToast('Phải chọn đúng ' + requiredSeats + ' ghế'); return; }
+            try {
+                const resp = await fetch(`/admin/api/orders/${selectedOrder.id}/assign`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ seats: selectedSeats })
+                });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi lưu phân ghế'); return; }
+                showToast('Đã phân ghế thành công!');
+                selectedOrder = null;
+                selectedSeats = [];
+                requiredSeats = 0;
+                document.getElementById('selected-order-info').style.display = 'none';
+                loadOrders();
+                loadSeatStatus();
+            } catch (e) { showToast('Lỗi lưu phân ghế'); }
+        }
+
+        async function loadStats() {
+            try {
+                const resp = await fetch('/api/seats');
+                const seats = await resp.json();
+                const tierCounts = { VIP: {total: 0, avail: 0, assigned: 0}, NEAR_VIP: {total: 0, avail: 0, assigned: 0}, STANDARD: {total: 0, avail: 0, assigned: 0}, LAST_ROW: {total: 0, avail: 0, assigned: 0} };
+                Object.values(seats).forEach(s => {
+                    tierCounts[s.tier_id] = tierCounts[s.tier_id] || {total:0,avail:0,assigned:0};
+                    tierCounts[s.tier_id].total++;
+                    if (s.status === 'available') tierCounts[s.tier_id].avail++;
+                    if (s.status === 'assigned') tierCounts[s.tier_id].assigned++;
+                });
+                const container = document.getElementById('tier-stats');
+                container.innerHTML = Object.entries(tierCounts).map(([id, c]) => `
+                    <div class="tier-stat-card">
+                        <div class="tier-name"><div class="tier-dot" style="background:${id === 'VIP' ? '#f59e0b' : id === 'NEAR_VIP' ? '#ef4444' : id === 'STANDARD' ? '#3b82f6' : '#ec4899'}"></div>${TIER_NAMES[id]}</div>
+                        <div class="numbers"><span>Tổng</span><span>${c.total}</span></div>
+                        <div class="numbers"><span class="available">Còn trống</span><span class="available">${c.avail}</span></div>
+                        <div class="numbers"><span class="assigned">Đã bán</span><span class="assigned">${c.assigned}</span></div>
+                    </div>`).join('');
+            } catch (e) {}
+        }
+
+        // 3D Chart for Admin
+        function initChart() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0a0e17, 0.015);
+            const canvas = document.getElementById('webgl-canvas');
+            const container = document.getElementById('chart-container');
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 60, -4);
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enableRotate = false;
+            controls.minDistance = 15;
+            controls.maxDistance = 130;
+            controls.target.set(0, 0, -4);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const mainDirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            mainDirLight.position.set(15, 40, 25);
+            scene.add(mainDirLight);
+            createStage();
+            buildAuditorium();
+            loadSeatStatus();
+            setupChartInteraction();
+            animate();
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        function createStage() {
+            const group = new THREE.Group();
+            const stageMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.4 });
+            const stageMesh = new THREE.Mesh(new THREE.BoxGeometry(26, 1.2, 7.5), stageMat);
+            stageMesh.position.set(0, 0.6, -18);
+            group.add(stageMesh);
+            const rimMesh = new THREE.Mesh(new THREE.BoxGeometry(26.4, 0.1, 7.9), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+            rimMesh.position.set(0, 1.25, -18);
+            group.add(rimMesh);
+            const floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x070b12, roughness: 0.8 }));
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.position.y = -0.01;
+            group.add(floorMesh);
+            const textCanvas = document.createElement('canvas');
+            textCanvas.width = 1024; textCanvas.height = 256;
+            const ctx = textCanvas.getContext('2d');
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, 1024, 256);
+            ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 6; ctx.strokeRect(20, 20, 984, 216);
+            ctx.font = 'bold 72px sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('SÂN KHẤU', 512, 128);
+            const textPlate = new THREE.Mesh(new THREE.PlaneGeometry(12, 3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(textCanvas) }));
+            textPlate.position.set(0, 4.5, -21.7);
+            group.add(textPlate);
+            scene.add(group);
+        }
+
+        function buildSeatMesh(tierId, posX, posZ, rotY = 0, code) {
+            const group = new THREE.Group();
+            const color = TIER_COLORS[tierId] || 0xffffff;
+            const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.1, emissive: color - 0x111111, emissiveIntensity: 0.2 });
+            const metalMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
+            const cushion = new THREE.BoxGeometry(0.85, 0.18, 0.8); cushion.translate(0, 0.45, 0);
+            const backrest = new THREE.BoxGeometry(0.85, 0.85, 0.18); backrest.translate(0, 0.88, -0.32); backrest.rotateX(0.08);
+            const stand = new THREE.CylinderGeometry(0.08, 0.08, 0.45, 8); stand.translate(0, 0.22, 0);
+            const cushionMesh = new THREE.Mesh(cushion, mat);
+            const backrestMesh = new THREE.Mesh(backrest, mat);
+            const standMesh = new THREE.Mesh(stand, metalMat);
+            group.add(cushionMesh); group.add(backrestMesh); group.add(standMesh);
+            const rowDistance = Math.max(0, posZ + 12);
+            group.position.set(posX, Math.pow(rowDistance * 0.18, 1.25) * 0.45, posZ);
+            group.rotation.y = rotY;
+            const seatData = { tierId, mat, code, group, ring: null };
+            cushionMesh.userData = seatData;
+            backrestMesh.userData = seatData;
+            scene.add(group);
+            seatObjects.push(cushionMesh, backrestMesh);
+            seatByCode[code] = seatData;
+        }
+
+        function buildAuditorium() {
+            const centerRows = [
+                { tierId: 'VIP', count: 11, z: -10.5, spacing: 1.1, id: 'C1' },
+                { tierId: 'VIP', count: 13, z: -8.8, spacing: 1.1, id: 'C2' },
+                { tierId: 'VIP', count: 14, z: -7.1, spacing: 1.1, id: 'C3' },
+                { tierId: 'VIP', count: 14, z: -5.4, spacing: 1.1, id: 'C4' },
+                { tierId: 'NEAR_VIP', count: 17, z: -3.5, spacing: 1.08, id: 'C5' },
+                { tierId: 'NEAR_VIP', count: 19, z: -1.7, spacing: 1.08, id: 'C6' },
+                { tierId: 'NEAR_VIP', count: 12, split: 6, gap: 2.2, z: 0.2, spacing: 1.08, id: 'C7' },
+                { tierId: 'NEAR_VIP', count: 12, split: 6, gap: 2.2, z: 2.1, spacing: 1.08, id: 'C8' },
+                { tierId: 'NEAR_VIP', count: 12, split: 6, gap: 2.2, z: 4.0, spacing: 1.08, id: 'C9' },
+            ];
+            centerRows.forEach(r => {
+                if (r.split) {
+                    const half = r.split, leftWidth = (half - 1) * r.spacing;
+                    for (let i = 0; i < half; i++) { const x = -(r.gap/2) - leftWidth + (i * r.spacing); buildSeatMesh(r.tierId, x, r.z + (x*x*0.008), -x*0.015, `${r.tierId.substring(0,4)}_${r.id}_${String(i+1).padStart(2,'0')}`); }
+                    for (let i = 0; i < half; i++) { const x = (r.gap/2) + (i * r.spacing); buildSeatMesh(r.tierId, x, r.z + (x*x*0.008), -x*0.015, `${r.tierId.substring(0,4)}_${r.id}_${String(half+i+1).padStart(2,'0')}`); }
+                } else {
+                    const totalWidth = (r.count - 1) * r.spacing;
+                    for (let i = 0; i < r.count; i++) { const x = -(totalWidth/2) + (i * r.spacing); buildSeatMesh(r.tierId, x, r.z + (x*x*0.008), -x*0.015, `${r.tierId.substring(0,4)}_${r.id}_${String(i+1).padStart(2,'0')}`); }
+                }
+            });
+            const wingRows = [
+                { tierId: 'NEAR_VIP', count: 3, z: -11.5, spacing: 1.05, id: 'L1' },
+                { tierId: 'NEAR_VIP', count: 5, z: -9.8, spacing: 1.05, id: 'L2' },
+                { tierId: 'NEAR_VIP', count: 7, z: -8.0, spacing: 1.05, id: 'L3' },
+                { tierId: 'NEAR_VIP', count: 8, z: -6.2, spacing: 1.05, id: 'L4' },
+                { tierId: 'STANDARD', count: 8, z: -4.2, spacing: 1.05, id: 'L5' },
+                { tierId: 'STANDARD', count: 11, z: -2.2, spacing: 1.05, id: 'L6' },
+                { tierId: 'STANDARD', count: 8, z: 0.0, spacing: 1.05, id: 'L7' },
+                { tierId: 'STANDARD', count: 8, z: 2.0, spacing: 1.05, id: 'L8' },
+                { tierId: 'STANDARD', count: 8, z: 4.0, spacing: 1.05, id: 'L9' },
+                { tierId: 'LAST_ROW', count: 8, z: 6.2, spacing: 1.05, id: 'L10' },
+            ];
+            wingRows.forEach(r => {
+                const wingStartX = -13.0 - (r.count * 0.4);
+                for (let i = 0; i < r.count; i++) { const localX = (i - r.count/2) * r.spacing; const x = wingStartX + (localX * Math.cos(0.28)); const z = r.z - (localX * Math.sin(0.28)); buildSeatMesh(r.tierId, x, z, 0.28, `${r.tierId.substring(0,4)}_${r.id}_${String(i+1).padStart(2,'0')}`); }
+                const wingStartX2 = 13.0 + (r.count * 0.4);
+                const rR = r.id.replace(/^L/, 'R');
+                for (let i = 0; i < r.count; i++) { const localX = (i - r.count/2) * r.spacing; const x = wingStartX2 + (localX * Math.cos(-0.28)); const z = r.z - (localX * Math.sin(-0.28)); buildSeatMesh(r.tierId, x, z, -0.28, `${r.tierId.substring(0,4)}_${rR}_${String(i+1).padStart(2,'0')}`); }
+            });
+        }
+
+        async function loadSeatStatus() {
+            try {
+                const resp = await fetch('/api/seats');
+                seatStatus = await resp.json();
+                Object.entries(seatStatus).forEach(([code, seat]) => {
+                    const seatData = seatByCode[code];
+                    if (!seatData) return;
+                    if (!selectedSeats.includes(code)) {
+                        const color = seat.status === 'assigned' ? 0x64748b : seat.status === 'held' ? 0x888888 : TIER_COLORS[seat.tier_id] || 0xffffff;
+                        seatData.mat.color.setHex(color);
+                    }
+                    setOccupiedRing(seatData, seat.status === 'assigned');
+                });
+            } catch (e) {}
+        }
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function pickSeat(e) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(seatObjects);
+            if (intersects.length > 0) {
+                const seatData = intersects[0].object.userData;
+                if (seatData && seatData.code) return seatData;
+            }
+            return null;
+        }
+
+        function setupChartInteraction() {
+            const canvas = renderer.domElement;
+            const tooltip = document.getElementById('seat-tooltip');
+            const container = document.getElementById('chart-container');
+            let downPos = null;
+            canvas.addEventListener('pointerdown', (e) => { downPos = { x: e.clientX, y: e.clientY }; });
+            canvas.addEventListener('pointerup', (e) => {
+                if (!downPos) return;
+                const moved = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
+                downPos = null;
+                if (moved > 5) return;
+                const seatData = pickSeat(e);
+                if (seatData) handleSeatClick(seatData);
+            });
+            canvas.addEventListener('pointermove', (e) => {
+                const seatData = pickSeat(e);
+                if (seatData) {
+                    const seat = seatStatus[seatData.code];
+                    let label = seatData.code;
+                    if (seat && seat.status === 'assigned') label += ' — Đã phân';
+                    else if (selectedSeats.includes(seatData.code)) label += ' — Đang chọn';
+                    tooltip.innerText = label;
+                    tooltip.style.display = 'block';
+                    const cRect = container.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - cRect.left + 14) + 'px';
+                    tooltip.style.top = (e.clientY - cRect.top + 14) + 'px';
+                    canvas.style.cursor = 'pointer';
+                } else {
+                    tooltip.style.display = 'none';
+                    canvas.style.cursor = 'grab';
+                }
+            });
+            canvas.addEventListener('pointerleave', () => { tooltip.style.display = 'none'; });
+        }
+
+        function setOccupiedRing(seatData, on) {
+            if (on && !seatData.ring) {
+                const ring = new THREE.Mesh(
+                    new THREE.RingGeometry(0.72, 0.95, 32),
+                    new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+                );
+                ring.rotation.x = -Math.PI / 2;
+                ring.position.y = 0.06;
+                seatData.group.add(ring);
+                seatData.ring = ring;
+            } else if (!on && seatData.ring) {
+                seatData.group.remove(seatData.ring);
+                seatData.ring.geometry.dispose();
+                seatData.ring.material.dispose();
+                seatData.ring = null;
+            }
+        }
+
+        function handleSeatClick(seatData) {
+            if (!selectedOrder) { showToast('Chọn đơn hàng cần phân ghế trước'); return; }
+            const seat = seatStatus[seatData.code];
+            if (seat && seat.status === 'assigned') { showToast('Ghế đã được phân'); return; }
+            if (selectedSeats.includes(seatData.code)) {
+                selectedSeats = selectedSeats.filter(c => c !== seatData.code);
+                seatData.mat.color.setHex(TIER_COLORS[seatData.tierId] || 0xffffff);
+            } else {
+                if (selectedSeats.length >= requiredSeats) { showToast('Đơn chỉ cần ' + requiredSeats + ' ghế'); return; }
+                selectedSeats.push(seatData.code);
+                seatData.mat.color.setHex(0x10b981);
+            }
+            updateSelectedSeatsDisplay();
+        }
+
+        function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+
+        // ===== Overview 3D chart =====
+        function initOverviewChart() {
+            overviewScene = new THREE.Scene();
+            overviewScene.fog = new THREE.FogExp2(0x0a0e17, 0.015);
+            const canvas = document.getElementById('overview-canvas');
+            const container = document.getElementById('overview-chart-container');
+            overviewRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            overviewRenderer.setSize(container.clientWidth, container.clientHeight);
+            overviewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            overviewCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            overviewCamera.position.set(0, 60, -4);
+            overviewControls = new THREE.OrbitControls(overviewCamera, overviewRenderer.domElement);
+            overviewControls.enableDamping = true;
+            overviewControls.dampingFactor = 0.05;
+            overviewControls.enableRotate = false;
+            overviewControls.minDistance = 15;
+            overviewControls.maxDistance = 130;
+            overviewControls.target.set(0, 0, -4);
+            overviewScene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+            dir.position.set(15, 40, 25);
+            overviewScene.add(dir);
+            buildOverviewStage();
+            buildOverviewAuditorium();
+            loadOverviewStatus();
+            setupOverviewInteraction();
+            overviewAnimate();
+            window.addEventListener('resize', () => {
+                overviewCamera.aspect = container.clientWidth / container.clientHeight;
+                overviewCamera.updateProjectionMatrix();
+                overviewRenderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        function buildOverviewStage() {
+            const group = new THREE.Group();
+            const stageMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.4 });
+            const stageMesh = new THREE.Mesh(new THREE.BoxGeometry(26, 1.2, 7.5), stageMat);
+            stageMesh.position.set(0, 0.6, -18);
+            group.add(stageMesh);
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x070b12, roughness: 0.8 }));
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -0.01;
+            group.add(floor);
+            const c = document.createElement('canvas');
+            c.width = 1024; c.height = 256;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, 1024, 256);
+            ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 6; ctx.strokeRect(20, 20, 984, 216);
+            ctx.font = 'bold 72px sans-serif'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('SÂN KHẤU', 512, 128);
+            const plate = new THREE.Mesh(new THREE.PlaneGeometry(12, 3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) }));
+            plate.position.set(0, 4.5, -21.7);
+            group.add(plate);
+            overviewScene.add(group);
+        }
+
+        function buildOverviewSeatMesh(tierId, posX, posZ, rotY, code) {
+            const group = new THREE.Group();
+            const color = TIER_COLORS[tierId] || 0xffffff;
+            const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.1, emissive: color - 0x111111, emissiveIntensity: 0.2 });
+            const metal = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
+            const cushion = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.18, 0.8), mat);
+            cushion.geometry.translate(0, 0.45, 0);
+            const back = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.18), mat);
+            back.geometry.translate(0, 0.88, -0.32); back.geometry.rotateX(0.08);
+            const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.45, 8), metal);
+            stand.geometry.translate(0, 0.22, 0);
+            group.add(cushion, back, stand);
+            const rowDistance = Math.max(0, posZ + 12);
+            group.position.set(posX, Math.pow(rowDistance * 0.18, 1.25) * 0.45, posZ);
+            group.rotation.y = rotY;
+            const seatData = { tierId, mat, code, group, ring: null, highlightRing: null };
+            cushion.userData = seatData; back.userData = seatData;
+            overviewScene.add(group);
+            overviewSeatObjects.push(cushion, back);
+            overviewSeatByCode[code] = seatData;
+        }
+
+        function buildOverviewAuditorium() {
+            const centerRows = [
+                { tierId: 'VIP', count: 11, z: -10.5, spacing: 1.1, id: 'C1' },
+                { tierId: 'VIP', count: 13, z: -8.8, spacing: 1.1, id: 'C2' },
+                { tierId: 'VIP', count: 14, z: -7.1, spacing: 1.1, id: 'C3' },
+                { tierId: 'VIP', count: 14, z: -5.4, spacing: 1.1, id: 'C4' },
+                { tierId: 'NEAR_VIP', count: 17, z: -3.5, spacing: 1.08, id: 'C5' },
+                { tierId: 'NEAR_VIP', count: 19, z: -1.7, spacing: 1.08, id: 'C6' },
+                { tierId: 'NEAR_VIP', count: 12, split: 6, gap: 2.2, z: 0.2, spacing: 1.08, id: 'C7' },
+                { tierId: 'NEAR_VIP', count: 12, split: 6, gap: 2.2, z: 2.1, spacing: 1.08, id: 'C8' },
+                { tierId: 'NEAR_VIP', count: 12, split: 6, gap: 2.2, z: 4.0, spacing: 1.08, id: 'C9' },
+            ];
+            centerRows.forEach(r => {
+                if (r.split) {
+                    const half = r.split, leftWidth = (half - 1) * r.spacing;
+                    for (let i = 0; i < half; i++) buildOverviewSeatMesh(r.tierId, -(r.gap/2) - leftWidth + (i * r.spacing), r.z + Math.pow(-(r.gap/2) - leftWidth + (i * r.spacing), 2) * 0.008, -(-(r.gap/2) - leftWidth + (i * r.spacing)) * 0.015, `${r.tierId.substring(0,4)}_${r.id}_${String(i+1).padStart(2,'0')}`);
+                    for (let i = 0; i < half; i++) buildOverviewSeatMesh(r.tierId, (r.gap/2) + (i * r.spacing), r.z + Math.pow((r.gap/2) + (i * r.spacing), 2) * 0.008, -((r.gap/2) + (i * r.spacing)) * 0.015, `${r.tierId.substring(0,4)}_${r.id}_${String(half+i+1).padStart(2,'0')}`);
+                } else {
+                    const totalWidth = (r.count - 1) * r.spacing;
+                    for (let i = 0; i < r.count; i++) buildOverviewSeatMesh(r.tierId, -(totalWidth/2) + (i * r.spacing), r.z + Math.pow(-(totalWidth/2) + (i * r.spacing), 2) * 0.008, -(-(totalWidth/2) + (i * r.spacing)) * 0.015, `${r.tierId.substring(0,4)}_${r.id}_${String(i+1).padStart(2,'0')}`);
+                }
+            });
+            const wingRows = [
+                { tierId: 'NEAR_VIP', count: 3, z: -11.5, spacing: 1.05, id: 'L1' },
+                { tierId: 'NEAR_VIP', count: 5, z: -9.8, spacing: 1.05, id: 'L2' },
+                { tierId: 'NEAR_VIP', count: 7, z: -8.0, spacing: 1.05, id: 'L3' },
+                { tierId: 'NEAR_VIP', count: 8, z: -6.2, spacing: 1.05, id: 'L4' },
+                { tierId: 'STANDARD', count: 8, z: -4.2, spacing: 1.05, id: 'L5' },
+                { tierId: 'STANDARD', count: 11, z: -2.2, spacing: 1.05, id: 'L6' },
+                { tierId: 'STANDARD', count: 8, z: 0.0, spacing: 1.05, id: 'L7' },
+                { tierId: 'STANDARD', count: 8, z: 2.0, spacing: 1.05, id: 'L8' },
+                { tierId: 'STANDARD', count: 8, z: 4.0, spacing: 1.05, id: 'L9' },
+                { tierId: 'LAST_ROW', count: 8, z: 6.2, spacing: 1.05, id: 'L10' },
+            ];
+            wingRows.forEach(r => {
+                const wingStartX = -13.0 - (r.count * 0.4);
+                for (let i = 0; i < r.count; i++) {
+                    const localX = (i - r.count/2) * r.spacing;
+                    const x = wingStartX + (localX * Math.cos(0.28));
+                    const z = r.z - (localX * Math.sin(0.28));
+                    buildOverviewSeatMesh(r.tierId, x, z, 0.28, `${r.tierId.substring(0,4)}_${r.id}_${String(i+1).padStart(2,'0')}`);
+                }
+                const wingStartX2 = 13.0 + (r.count * 0.4);
+                const rR = r.id.replace(/^L/, 'R');
+                for (let i = 0; i < r.count; i++) {
+                    const localX = (i - r.count/2) * r.spacing;
+                    const x = wingStartX2 + (localX * Math.cos(-0.28));
+                    const z = r.z - (localX * Math.sin(-0.28));
+                    buildOverviewSeatMesh(r.tierId, x, z, -0.28, `${r.tierId.substring(0,4)}_${rR}_${String(i+1).padStart(2,'0')}`);
+                }
+            });
+        }
+
+        async function loadOverviewStatus() {
+            try {
+                const resp = await fetch('/admin/api/seats-overview');
+                const data = await resp.json();
+                overviewSeatStatus = data;
+                const orderGroups = {};
+                Object.entries(data).forEach(([code, seat]) => {
+                    if (seat.status === 'assigned' && seat.order_code) {
+                        if (!orderGroups[seat.order_code]) orderGroups[seat.order_code] = [];
+                        orderGroups[seat.order_code].push(code);
+                    }
+                });
+                window.__overviewOrderGroups = orderGroups;
+                Object.entries(overviewSeatByCode).forEach(([code, seatData]) => {
+                    const seat = data[code];
+                    const color = (!seat || seat.status === 'available') ? (TIER_COLORS[seatData.tierId] || 0xffffff) : 0x94a3b8;
+                    seatData.mat.color.setHex(color);
+                });
+            } catch (e) {}
+        }
+
+        const overviewRaycaster = new THREE.Raycaster();
+        const overviewMouse = new THREE.Vector2();
+        let lastHighlightedOrder = null;
+
+        function pickOverviewSeat(e) {
+            const rect = overviewRenderer.domElement.getBoundingClientRect();
+            overviewMouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            overviewMouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            overviewRaycaster.setFromCamera(overviewMouse, overviewCamera);
+            const hits = overviewRaycaster.intersectObjects(overviewSeatObjects);
+            if (hits.length > 0) return hits[0].object.userData;
+            return null;
+        }
+
+        function setOverviewRing(seatData, on) {
+            if (on && !seatData.highlightRing) {
+                const ring = new THREE.Mesh(
+                    new THREE.RingGeometry(0.78, 1.02, 32),
+                    new THREE.MeshBasicMaterial({ color: 0x22d3ee, side: THREE.DoubleSide, transparent: true, opacity: 0.95 })
+                );
+                ring.rotation.x = -Math.PI / 2;
+                ring.position.y = 0.07;
+                seatData.group.add(ring);
+                seatData.highlightRing = ring;
+            } else if (!on && seatData.highlightRing) {
+                seatData.group.remove(seatData.highlightRing);
+                seatData.highlightRing.geometry.dispose();
+                seatData.highlightRing.material.dispose();
+                seatData.highlightRing = null;
+            }
+        }
+
+        function clearOrderHighlights() {
+            Object.values(overviewSeatByCode).forEach(s => setOverviewRing(s, false));
+            lastHighlightedOrder = null;
+        }
+
+        function highlightOrder(orderCode) {
+            if (lastHighlightedOrder === orderCode) return;
+            clearOrderHighlights();
+            lastHighlightedOrder = orderCode;
+            const codes = (window.__overviewOrderGroups || {})[orderCode] || [];
+            codes.forEach(c => {
+                const s = overviewSeatByCode[c];
+                if (s) setOverviewRing(s, true);
+            });
+        }
+
+        function setupOverviewInteraction() {
+            const canvas = overviewRenderer.domElement;
+            const tooltip = document.getElementById('overview-tooltip');
+            const container = document.getElementById('overview-chart-container');
+            canvas.addEventListener('pointermove', (e) => {
+                const seatData = pickOverviewSeat(e);
+                if (seatData) {
+                    const seat = overviewSeatStatus[seatData.code];
+                    let label = seatData.code;
+                    if (seat && seat.status === 'assigned' && seat.customer_name) {
+                        label = `${seatData.code} — ${seat.customer_name}`;
+                        if (seat.order_code) {
+                            label += ` (${seat.order_code})`;
+                            highlightOrder(seat.order_code);
+                        } else {
+                            clearOrderHighlights();
+                        }
+                    } else {
+                        clearOrderHighlights();
+                    }
+                    tooltip.innerText = label;
+                    tooltip.style.display = 'block';
+                    const cRect = container.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - cRect.left + 14) + 'px';
+                    tooltip.style.top = (e.clientY - cRect.top + 14) + 'px';
+                    canvas.style.cursor = 'pointer';
+                } else {
+                    tooltip.style.display = 'none';
+                    clearOrderHighlights();
+                    canvas.style.cursor = 'grab';
+                }
+            });
+            canvas.addEventListener('pointerleave', () => {
+                tooltip.style.display = 'none';
+                clearOrderHighlights();
+            });
+        }
+
+        function overviewAnimate() { requestAnimationFrame(overviewAnimate); overviewControls.update(); overviewRenderer.render(overviewScene, overviewCamera); }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        loadOrders();
+        setInterval(loadOrders, 5000);
+        setInterval(loadSeatStatus, 5000);
+        setInterval(loadOverviewStatus, 8000);
+    </script>
+</body>
+</html>

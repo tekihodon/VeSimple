@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sơ Đồ Khán Phòng 3D - {{ event.name }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { overflow: hidden; background: radial-gradient(circle at center, #111827 0%, #080c14 100%); color: #fff; width: 100vw; height: 100vh; }
+        #webgl-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        .disclaimer-banner { position: absolute; top: 76px; left: 50%; transform: translateX(-50%); z-index: 10; background: rgba(30,41,59,0.88); backdrop-filter: blur(12px); border: 1px solid rgba(245,158,11,0.35); border-radius: 30px; padding: 8px 18px; display: flex; align-items: center; gap: 8px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.4); pointer-events: auto; }
+        .disclaimer-banner .icon { font-size: 16px; color: #f59e0b; flex-shrink: 0; }
+        .disclaimer-banner .text { font-size: 12px; color: #e2e8f0; line-height: 1.4; }
+        .disclaimer-banner .text strong { color: #f59e0b; }
+
+        .show-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; display: none; align-items: center; justify-content: center; background: rgba(8,12,20,0.35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); pointer-events: none; }
+        .show-overlay.active { display: flex; animation: showOverlayFade 0.45s ease; }
+        .show-overlay img { max-width: 82vw; max-height: 78vh; width: auto; height: auto; border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.65); }
+        @keyframes showOverlayFade { from { opacity: 0; } to { opacity: 1; } }
+
+        .header { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; pointer-events: none; width: 100%; padding: 0 16px; }
+        .header h1 { font-size: 20px; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; background: linear-gradient(135deg,#ffffff,#cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { font-size: 12px; color: #f59e0b; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+        .info-btn { position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(15,23,42,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 14px; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .info-btn:hover { background: rgba(255,255,255,0.15); }
+
+        .info-panel { position: absolute; top: 0; left: 0; width: 340px; height: 100vh; z-index: 50; background: rgba(15,23,42,0.97); backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.1); transform: translateX(-100%); transition: transform 0.35s ease; overflow-y: auto; padding: 24px 20px; }
+        .info-panel.open { transform: translateX(0); }
+        .info-panel .close-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.1); border: none; color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; }
+        .info-panel h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; background: linear-gradient(135deg,#fff,#cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .info-panel .event-sub { font-size: 12px; color: #f59e0b; font-weight: 700; letter-spacing: 1px; margin-bottom: 20px; }
+        .info-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .info-row .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .info-row .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .info-row .value { font-size: 14px; font-weight: 600; margin-top: 2px; }
+        .info-row .value a { color: #38bdf8; text-decoration: none; }
+        .info-section-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; }
+        .ticket-list { display: flex; flex-direction: column; gap: 8px; }
+        .ticket-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid transparent; transition: all 0.2s; }
+        .ticket-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .ticket-item .tier-dot { width: 12px; height: 12px; border-radius: 4px; margin-right: 10px; flex-shrink: 0; }
+        .ticket-item .tier-info { flex: 1; }
+        .ticket-item .tier-name { font-size: 13px; font-weight: 700; }
+        .ticket-item .tier-desc { font-size: 10px; color: #94a3b8; }
+        .ticket-item .tier-price { font-size: 14px; font-weight: 800; color: #38bdf8; }
+        .info-footer { margin-top: 24px; padding: 16px; background: rgba(245,158,11,0.08); border-radius: 12px; border: 1px solid rgba(245,158,11,0.2); }
+        .info-footer p { font-size: 12px; color: #fef3c7; line-height: 1.5; }
+
+        .view-controls { position: absolute; top: 16px; right: 16px; z-index: 40; display: flex; gap: 6px; background: rgba(15,23,42,0.8); backdrop-filter: blur(12px); padding: 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-view { background: transparent; border: none; color: #94a3b8; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-view:hover, .btn-view.active { background: rgba(255,255,255,0.15); color: #fff; }
+
+        .legend-card { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(15,23,42,0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 320px; max-width: calc(100vw - 40px); }
+        .legend-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; }
+        .tier-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.04); border-radius: 10px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+        .tier-item:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); transform: translateY(-1px); }
+        .tier-info-left { display: flex; align-items: center; gap: 10px; }
+        .tier-dot { width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 10px currentColor; }
+        .tier-name { font-size: 13px; font-weight: 700; }
+        .tier-sub { font-size: 10px; color: #94a3b8; }
+        .tier-price { font-size: 13px; font-weight: 800; color: #38bdf8; }
+        .tier-available { font-size: 10px; color: #10b981; font-weight: 600; }
+
+        .cart-card { position: absolute; bottom: 20px; right: 20px; z-index: 10; background: rgba(15,23,42,0.88); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 16px; width: 300px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .cart-header { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; }
+        .cart-items-list { max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .cart-item-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 8px; font-size: 12px; }
+        .cart-total { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+        .cart-total-value { font-size: 18px; font-weight: 800; color: #10b981; }
+        .btn-checkout { background: linear-gradient(135deg,#10b981,#059669); color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; width: 100%; }
+        .btn-checkout:hover { box-shadow: 0 4px 15px rgba(16,185,129,0.4); }
+        .btn-checkout:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+        #seat-tooltip { position: absolute; z-index: 100; pointer-events: none; background: rgba(15,23,42,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #fff; transform: translate(-50%,-120%); display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); white-space: nowrap; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; padding: 16px; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; width: 100%; max-width: 440px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.7); transform: translateY(20px); transition: transform 0.25s ease; }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .modal-title-tier { font-size: 18px; font-weight: 800; }
+        .modal-price-tag { font-size: 16px; font-weight: 800; color: #38bdf8; margin-top: 4px; }
+        .btn-close-modal { background: rgba(255,255,255,0.1); border: none; color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+        .modal-disclaimer { background: rgba(245,158,11,0.1); border-left: 3px solid #f59e0b; padding: 10px 12px; border-radius: 6px; font-size: 12px; color: #fef3c7; line-height: 1.4; margin-bottom: 20px; }
+        .quantity-control { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: 12px; margin-bottom: 20px; }
+        .qty-btns { display: flex; align-items: center; gap: 12px; }
+        .btn-qty { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-add-to-cart { width: 100%; background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245,158,11,0.3); }
+        .btn-add-to-cart:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
+
+        .checkout-form-modal .form-group { margin-bottom: 16px; }
+        .checkout-form-modal label { display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+        .checkout-form-modal input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px; }
+        .checkout-form-modal input:focus { outline: none; border-color: #f59e0b; }
+        .checkout-summary { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+        .checkout-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; }
+        .checkout-summary-row.total { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 6px; padding-top: 10px; font-weight: 800; color: #10b981; }
+        .btn-checkout-submit { width: 100%; background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; }
+        .btn-back-to-chart { width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; padding: 12px; border-radius: 10px; font-size: 13px; cursor: pointer; margin-top: 8px; }
+
+        .payment-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .payment-overlay.active { display: flex; }
+        .payment-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 32px; max-width: 480px; width: 90%; text-align: center; }
+        .payment-card h2 { font-size: 22px; margin-bottom: 4px; }
+        .payment-card .sub { color: #94a3b8; font-size: 14px; margin-bottom: 16px; }
+        .payment-code { font-size: 24px; font-weight: 800; color: #f59e0b; margin: 16px 0; }
+        .payment-qr { background: #fff; border-radius: 16px; padding: 20px; display: inline-block; margin: 16px 0; }
+        .payment-qr img { max-width: 240px; }
+        .bank-box { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: left; margin: 16px 0; }
+        .bank-box p { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .bank-box p:last-child { border-bottom: none; }
+        .bank-box .bl { color: #94a3b8; }
+        .bank-box .bv { font-weight: 700; }
+        .btn-pay-confirm { background: linear-gradient(135deg,#10b981,#059669); color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 16px; }
+        .btn-pay-back { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 8px; }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #10b981; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 700; z-index: 2000; box-shadow: 0 10px 25px rgba(16,185,129,0.4); transition: transform 0.3s ease; pointer-events: none; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        .mobile-cart-btn { position: fixed; bottom: 60px; right: 16px; z-index: 90; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.4); display: none; align-items: center; gap: 8px; }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 15px; } .header p { font-size: 10px; }
+            .disclaimer-banner { top: 65px; padding: 6px 12px; border-radius: 12px; } .disclaimer-banner .text { font-size: 11px; }
+            .view-controls { top: auto; bottom: 80px; right: 50%; transform: translateX(50%); background: rgba(15,23,42,0.9); flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 24px); }
+            .legend-card { position: fixed; bottom: 0; left: 0; width: 100vw; border-radius: 20px 20px 0 0; padding: 14px; background: rgba(15,23,42,0.95); transform: translateY(calc(100% - 48px)); transition: transform 0.3s; }
+            .legend-card.expanded { transform: translateY(0); }
+            .legend-toggle-bar { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+            .cart-card { display: none; }
+            .mobile-cart-btn { display: flex; }
+            .info-panel { width: 100vw; }
+            .show-overlay img { max-width: 80vw; max-height: 52vh; border-radius: 12px; }
+        }
+        @media (min-width: 769px) { .mobile-cart-btn { display: none; } .legend-toggle-bar { pointer-events: none; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Sơ Đồ Chỗ Ngồi Khán Phòng</h1>
+        <p>Liveshow: {{ event.name }}</p>
+    </div>
+
+    <button class="info-btn" onclick="toggleInfoPanel()">ℹ️ {{ event.name[:10] }}</button>
+
+    <div class="info-panel" id="info-panel">
+        <button class="close-btn" onclick="toggleInfoPanel()">✕</button>
+        <h2>{{ event.name }}</h2>
+        <p class="event-sub">{{ event.date }} | Check-in {{ event.checkinTime }} | Show {{ event.showTime }}</p>
+        <div class="info-section-title">Thông Tin Sự Kiện</div>
+        <div class="info-row"><span class="icon">📍</span><div><div class="label">Venue</div><div class="value">{{ event.venue }}</div><div class="value" style="font-size:12px;color:#94a3b8;">{{ event.address }}</div></div></div>
+        <div class="info-row"><span class="icon">📞</span><div><div class="label">Hotline</div><div class="value">{{ event.hotline }}</div></div></div>
+        <div class="info-row"><span class="icon">✉️</span><div><div class="label">Email</div><div class="value" style="font-size:12px;">{{ event.email }}</div></div></div>
+        <div class="info-section-title">Các Hạng Vé</div>
+        <div class="ticket-list">
+            {% for t in tiers %}
+            <div class="ticket-item">
+                <div class="tier-info-left"><div class="tier-dot" style="background:{{ t.color }};"></div><div><div class="tier-name">{{ t.name }}</div><div class="tier-desc">{{ t.description }}</div></div></div>
+                <div class="tier-price">{{ t.price|currency }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="info-footer">
+            <p>💡 Sơ đồ 3D thể hiện trực quan vị trí khu vực. Số ghế cụ thể sẽ được BTC sắp xếp & cập nhật tên bạn trước ngày <strong>15/10/2026</strong>. Ghế trên sơ đồ giúp bạn chọn đúng vị trí khu vực mong muốn.</p>
+        </div>
+    </div>
+
+    <div class="disclaimer-banner">
+        <span class="icon">💡</span>
+        <span class="text">Sơ đồ 3D thể hiện trực quan vị trí khu vực. Số ghế cụ thể sẽ được BTC sắp xếp & cập nhật tên bạn trước ngày <strong>15/10/2026</strong>.</span>
+    </div>
+
+    <div class="show-overlay active" id="show-overlay">
+        <img src="/static/banner.jpg" alt="Chương trình biểu diễn">
+    </div>
+
+    <div class="view-controls">
+        <button class="btn-view" id="btn-view-overview" onclick="setCameraView('overview', this)">Tổng Quan</button>
+        <button class="btn-view active" onclick="setCameraView('show', this)">Chương trình</button>
+        <button class="btn-view" onclick="setCameraView('stage', this)">Sân Khấu</button>
+        <button class="btn-view" onclick="setCameraView('vip', this)">Khu VIP</button>
+        <button class="btn-view" onclick="setCameraView('top', this)">Toàn Cảnh</button>
+    </div>
+
+    <div class="legend-card" id="legend-card">
+        <div class="legend-toggle-bar" onclick="toggleMobileLegend()">
+            <div class="legend-title"><span>Phân Hạng Ghế (Click để chọn mua)</span></div>
+            <span style="font-size:12px;color:#94a3b8;" id="legend-arrow">▲</span>
+        </div>
+        <div class="legend-list" id="legend-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+    </div>
+
+    <div class="cart-card">
+        <div class="cart-header"><span>Giỏ Hàng Mua Vé</span><span style="cursor:pointer;color:#ef4444;" onclick="clearCart()">Xóa tất cả</span></div>
+        <div class="cart-items-list" id="cart-list"><span style="font-size:11px;color:#64748b;">Chưa có hạng vé nào được chọn</span></div>
+        <div class="cart-total"><span style="font-size:12px;color:#94a3b8;">Tổng tiền</span><span class="cart-total-value" id="cart-total">0 đ</span></div>
+        <button class="btn-checkout" id="btn-checkout" disabled onclick="openCheckout()">Tiếp Tục Đặt Vé →</button>
+    </div>
+
+    <button class="mobile-cart-btn" onclick="openMobileCart()">🛒 Giỏ Hàng (<span id="mobile-cart-count">0</span>)</button>
+
+    <div id="seat-tooltip">
+        <div id="tt-tier" style="font-size:10px;font-weight:700;text-transform:uppercase;">HẠNG NỞ HOA</div>
+        <div id="tt-sub" style="font-size:12px;font-weight:800;color:#38bdf8;">Click để chọn số lượng vé</div>
+    </div>
+
+    <!-- Modal Chọn Số Lượng -->
+    <div class="modal-overlay" id="buy-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div><div class="modal-title-tier" id="modal-tier-name">Hạng Nở Hoa</div><div class="modal-price-tag" id="modal-tier-price">400.000 đ / vé</div><div id="modal-avail" style="font-size:12px;font-weight:700;color:#34d399;margin-top:6px;"></div></div>
+                <button class="btn-close-modal" onclick="closeBuyModal()">✕</button>
+            </div>
+            <div class="modal-disclaimer">📌 <strong>Lưu ý:</strong> Ghế trên sơ đồ 3D giúp bạn chọn đúng vị trí khu vực. Tên & số ghế cụ thể sẽ do BTC sắp xếp trước ngày <strong>15/10/2026</strong>.</div>
+            <div class="quantity-control">
+                <span style="font-size:13px;font-weight:600;color:#cbd5e1;">Số lượng vé:</span>
+                <div class="qty-btns">
+                    <button class="btn-qty" onclick="changeQty(-1)">-</button>
+                    <span id="modal-qty" style="font-size:16px;font-weight:800;width:24px;text-align:center;">1</span>
+                    <button class="btn-qty" onclick="changeQty(1)">+</button>
+                </div>
+            </div>
+            <button class="btn-add-to-cart" onclick="confirmAddToCart()">🛒 Thêm Vào Giỏ Hàng</button>
+        </div>
+    </div>
+
+    <!-- Modal Checkout -->
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-card checkout-form-modal">
+            <div class="modal-header">
+                <div><div class="modal-title-tier">Thông Tin Đặt Vé</div><div class="modal-price-tag" id="checkout-total-summary">0 đ</div></div>
+                <button class="btn-close-modal" onclick="closeCheckout()">✕</button>
+            </div>
+            <div class="checkout-summary" id="checkout-items-summary"></div>
+            <div class="form-group"><label>Họ và tên</label><input type="text" name="full_name" id="cf-full_name" required placeholder="Nhập họ tên đầy đủ"></div>
+            <div class="form-group"><label>Số điện thoại</label><input type="tel" name="phone" id="cf-phone" required placeholder="0xxx xxx xxx"></div>
+            <div class="form-group"><label>Email</label><input type="email" name="email" id="cf-email" required placeholder="email@example.com"></div>
+            <button class="btn-add-to-cart" onclick="submitCheckout()">Tiếp Tục Thanh Toán</button>
+            <button class="btn-back-to-chart" onclick="closeCheckout()">← Quay lại sơ đồ</button>
+        </div>
+    </div>
+
+    <!-- Payment Overlay -->
+    <div class="payment-overlay" id="payment-overlay">
+        <div class="payment-card">
+            <h2>Thanh Toán VietQR</h2>
+            <p class="sub">Quét mã QR bằng ứng dụng ngân hàng</p>
+            <div class="payment-code" id="payment-order-code"></div>
+            <div class="payment-qr"><img id="qr-image" src="" alt="QR"></div>
+            <div class="bank-box">
+                <p><span class="bl">Ngân hàng</span><span class="bv">{{ config.vietqr.bankName }}</span></p>
+                <p><span class="bl">Số tài khoản</span><span class="bv">{{ config.vietqr.accountNo }}</span></p>
+                <p><span class="bl">Tên TK</span><span class="bv">{{ config.vietqr.accountName }}</span></p>
+                <p><span class="bl">Số tiền</span><span class="bv" id="payment-amount"></span></p>
+            </div>
+            <p style="font-size:12px;color:#f59e0b;background:rgba(245,158,11,0.1);padding:12px;border-radius:8px;margin:16px 0;"><strong>Nội dung chuyển:</strong> <span id="payment-code-text" style="font-weight:800;"></span></p>
+            <p style="font-size:11px;color:#94a3b8;margin-bottom:16px;">Chuyển đúng số tiền & nội dung. Đơn sẽ được xác nhận sau khi BTC kiểm tra.</p>
+            <button class="btn-pay-confirm" id="confirm-payment-btn" onclick="confirmPayment()">✓ Tôi đã chuyển khoản xong</button>
+            <button class="btn-pay-back" onclick="closePayment()">Quay lại</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast-msg">Đã thêm vé vào giỏ hàng!</div>
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <script>
+        const TIERS_MAP = {
+            VIP: { id:'VIP', name:'Hạng Nở Hoa', price:400000, color:0xf59e0b, hex:'#f59e0b', emissive:0x663d00 },
+            NEAR_VIP: { id:'NEAR_VIP', name:'Hạng Thức Tỉnh', price:350000, color:0xef4444, hex:'#ef4444', emissive:0x5a1111 },
+            STANDARD: { id:'STANDARD', name:'Hạng Thanh Xuân', price:300000, color:0x3b82f6, hex:'#3b82f6', emissive:0x0f2f64 },
+            LAST_ROW: { id:'LAST_ROW', name:'Hạng Tích Tắc', price:250000, color:0xec4899, hex:'#ec4899', emissive:0x540f30 }
+        };
+        const TIER_NO = { VIP:1, NEAR_VIP:2, STANDARD:3, LAST_ROW:4 };
+
+        let tierStats = {};
+        let cartState = {};
+        let activeTierForModal = null;
+        let activeQty = 1;
+        let currentOrder = null;
+        let isAdminMode = false;
+
+        function toggleInfoPanel() { document.getElementById('info-panel').classList.toggle('open'); }
+
+        async function loadTierStats() {
+            try {
+                const r = await fetch('/api/tiers');
+                const tiers = await r.json();
+                tiers.forEach(t => { tierStats[t.id] = t; });
+                renderLegend();
+            } catch(e) { console.error(e); }
+        }
+
+        function renderLegend() {
+            const list = document.getElementById('legend-list');
+            list.innerHTML = '';
+            Object.values(TIERS_MAP).forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'tier-item';
+                div.onclick = () => openBuyModal(t.id);
+                const avail = tierStats[t.id]?.available ?? '—';
+                div.innerHTML = `<div class="tier-info-left"><div class="tier-dot" style="background:${t.hex};"></div><div><div class="tier-name">${t.name}</div><div class="tier-sub">${avail} Ghế</div></div></div><div class="tier-price">${t.price.toLocaleString('vi-VN')} đ</div>`;
+                list.appendChild(div);
+            });
+        }
+
+        async function openBuyModal(tierId) {
+            const t = TIERS_MAP[tierId];
+            if (!t) return;
+            activeTierForModal = t;
+            activeQty = 1;
+            document.getElementById('modal-tier-name').innerText = t.name;
+            document.getElementById('modal-tier-name').style.color = t.hex;
+            document.getElementById('modal-tier-price').innerText = t.price.toLocaleString('vi-VN') + ' đ / vé';
+            document.getElementById('modal-qty').innerText = activeQty;
+            document.getElementById('modal-avail').innerText = 'Còn ' + (tierStats[tierId]?.available ?? '—') + ' ghế trống';
+            document.getElementById('buy-modal').classList.add('active');
+        }
+        function closeBuyModal() { document.getElementById('buy-modal').classList.remove('active'); }
+        function changeQty(delta) { activeQty = Math.max(1, Math.min(10, activeQty + delta)); document.getElementById('modal-qty').innerText = activeQty; }
+
+        async function confirmAddToCart() {
+            if (!activeTierForModal) return;
+            const tId = activeTierForModal.id;
+            try {
+                const r = await fetch('/api/cart', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tier_id:tId, qty:activeQty}) });
+                const data = await r.json();
+                if (data.ok) { cartState[tId] = (cartState[tId]||0) + activeQty; updateCartUI(); closeBuyModal(); loadTierStats(); showToast(`Đã thêm ${activeQty} vé [${activeTierForModal.name}] vào giỏ hàng!`); }
+                else showToast(data.error||'Có lỗi xảy ra');
+            } catch(e) { showToast('Lỗi kết nối'); }
+        }
+
+        async function clearCart() {
+            try { await fetch('/api/cart/clear',{method:'POST'}); cartState={}; updateCartUI(); } catch(e){}
+        }
+
+        function updateCartUI() {
+            const cartList=document.getElementById('cart-list'), cartTotal=document.getElementById('cart-total'), btnCheckout=document.getElementById('btn-checkout'), mobileCartCount=document.getElementById('mobile-cart-count');
+            let totalMoney=0, totalSeatsCount=0; cartList.innerHTML='';
+            Object.keys(cartState).forEach(tId=>{ const qty=cartState[tId]; if(qty>0&&TIERS_MAP[tId]){ const tier=TIERS_MAP[tId]; const itemMoney=tier.price*qty; totalMoney+=itemMoney; totalSeatsCount+=qty; const row=document.createElement('div'); row.className='cart-item-row'; row.innerHTML=`<div><strong style="color:${tier.hex}">${tier.name}</strong><div style="font-size:10px;color:#94a3b8;">x${qty} vé · Còn ${tierStats[tId]?.available ?? '—'} ghế</div></div><div style="font-weight:700;">${itemMoney.toLocaleString('vi-VN')} đ</div>`; cartList.appendChild(row); }});
+            mobileCartCount.innerText=totalSeatsCount;
+            if(totalSeatsCount===0){ cartList.innerHTML='<span style="font-size:11px;color:#64748b;">Chưa có hạng vé nào được chọn</span>'; cartTotal.innerText='0 đ'; btnCheckout.disabled=true; }
+            else { cartTotal.innerText=totalMoney.toLocaleString('vi-VN')+' đ'; btnCheckout.disabled=false; }
+        }
+
+        async function openCheckout() {
+            const r = await fetch('/api/cart');
+            const data = await r.json();
+            if(!data.items||data.items.length===0){showToast('Giỏ hàng trống');return;}
+            document.getElementById('checkout-items-summary').innerHTML = '<strong style="font-size:12px;color:#94a3b8;">Vé đã chọn:</strong>' + data.items.map(i=>`<div class="checkout-summary-row"><span>${i.name} x${i.qty}</span><span>${(i.price*i.qty).toLocaleString('vi-VN')} đ</span></div>`).join('') + `<div class="checkout-summary-row total"><span>Tổng cộng</span><span>${data.total.toLocaleString('vi-VN')} đ</span></div>`;
+            document.getElementById('checkout-total-summary').innerText = data.total.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('checkout-modal').classList.add('active');
+        }
+        function closeCheckout() { document.getElementById('checkout-modal').classList.remove('active'); }
+
+        async function submitCheckout(e) {
+            if(e && e.preventDefault) e.preventDefault();
+            const full_name = document.getElementById('cf-full_name').value.trim();
+            const phone = document.getElementById('cf-phone').value.trim();
+            const email = document.getElementById('cf-email').value.trim();
+            if(!full_name||!phone||!email){showToast('Vui lòng điền đầy đủ thông tin');return;}
+            try {
+                const r = await fetch('/api/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({full_name,phone,email}) });
+                const result = await r.json();
+                if(result.ok) {
+                    currentOrder = result.order;
+                    document.getElementById('payment-order-code').innerText = 'Mã đơn: ' + result.order.code;
+                    document.getElementById('qr-image').src = result.qr_url;
+                    document.getElementById('payment-amount').innerText = result.order.total.toLocaleString('vi-VN') + ' đ';
+                    document.getElementById('payment-code-text').innerText = result.order.code;
+                    document.getElementById('confirm-payment-btn').dataset.orderId = result.order.id;
+                    cartState={}; updateCartUI();
+                    document.getElementById('checkout-modal').classList.remove('active');
+                    document.getElementById('payment-overlay').classList.add('active');
+                } else showToast(result.error||'Có lỗi xảy ra');
+            } catch(e) { showToast('Lỗi kết nối'); }
+        }
+
+        function confirmPayment() {
+            const orderId = document.getElementById('confirm-payment-btn').dataset.orderId;
+            if(!orderId) return;
+            document.getElementById('payment-overlay').classList.remove('active');
+            showToast('✅ Đã ghi nhận đơn! Chờ BTC xác nhận thanh toán.');
+            currentOrder = null;
+        }
+        function closePayment() { document.getElementById('payment-overlay').classList.remove('active'); }
+
+        function showToast(msg) { const toast=document.getElementById('toast-msg'); toast.innerText=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000); }
+
+        function toggleMobileLegend() { if(window.innerWidth<=768){ const card=document.getElementById('legend-card'); const arrow=document.getElementById('legend-arrow'); card.classList.toggle('expanded'); arrow.innerText=card.classList.contains('expanded')?'▼':'▲'; } }
+        function openMobileCart() { const cc=document.querySelector('.cart-card'); if(cc.style.display==='flex') cc.style.display='none'; else { cc.style.display='flex'; cc.style.position='fixed'; cc.style.bottom='110px'; cc.style.right='16px'; cc.style.zIndex='100'; } }
+
+        // 3D Scene
+        let scene, camera, renderer, controls;
+        let seatObjects = [];
+        let seatsByTier = {VIP:[],NEAR_VIP:[],STANDARD:[],LAST_ROW:[]};
+        let seatByCode = {};
+
+        function init3DChart() {
+            if(scene) return;
+            scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x0a0e17, 0.015);
+            const canvas = document.getElementById('webgl-canvas');
+            renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 7.2, -11.8);
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI/2.05; controls.minDistance = 10; controls.maxDistance = 90;
+            controls.target.set(0, 6.2, -21.8);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const d = new THREE.DirectionalLight(0xffffff, 0.8); d.position.set(15,40,25); d.castShadow=true; scene.add(d);
+            const s1 = new THREE.SpotLight(0x38bdf8, 2.5); s1.position.set(-15,20,-18); s1.target.position.set(0,0,-18); scene.add(s1); scene.add(s1.target);
+            const s2 = new THREE.SpotLight(0xf43f5e, 2.5); s2.position.set(15,20,-18); s2.target.position.set(0,0,-18); scene.add(s2); scene.add(s2.target);
+            createStage(); buildAuditorium(); loadSeatStatus(); setInterval(loadSeatStatus, 5000); setupInteraction(); animate();
+            setTimeout(function(){ setCameraView('overview', document.getElementById('btn-view-overview')); }, 3200);
+        }
+
+        function createStage() {
+            const g = new THREE.Group();
+            const platform = new THREE.Mesh(new THREE.BoxGeometry(26,1.2,7.5), new THREE.MeshStandardMaterial({color:0x1e293b,roughness:0.3,metalness:0.4})); platform.position.set(0,0.6,-18); g.add(platform);
+            const trim = new THREE.Mesh(new THREE.BoxGeometry(26.4,0.1,7.9), new THREE.MeshBasicMaterial({color:0x38bdf8})); trim.position.set(0,1.25,-18); g.add(trim);
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(100,100), new THREE.MeshStandardMaterial({color:0x070b12,roughness:0.8})); floor.rotation.x=-Math.PI/2; floor.position.y=-0.01; g.add(floor);
+            new THREE.TextureLoader().load('/static/banner.jpg', function(tex){
+                tex.encoding = THREE.sRGBEncoding;
+                const ar = tex.image.width / tex.image.height;
+                const bh = 10.5, bw = bh * ar;
+                const banner = new THREE.Mesh(new THREE.PlaneGeometry(bw,bh), new THREE.MeshBasicMaterial({map:tex}));
+                banner.position.set(0,6.5,-21.8);
+                g.add(banner);
+            });
+            scene.add(g);
+        }
+
+        const seatParts = (()=>{ const c=new THREE.BoxGeometry(0.85,0.18,0.8); c.translate(0,0.45,0); const b=new THREE.BoxGeometry(0.85,0.85,0.18); b.translate(0,0.88,-0.32); b.rotateX(0.08); const s=new THREE.CylinderGeometry(0.08,0.08,0.45,8); s.translate(0,0.22,0); return {c,b,s}; })();
+
+        function buildSeatMesh(tier, posX, posZ, rotY=0, code) {
+            const group = new THREE.Group();
+            const mat = new THREE.MeshStandardMaterial({color:tier.color,roughness:0.4,metalness:0.1,emissive:tier.emissive,emissiveIntensity:0.2});
+            const metalMat = new THREE.MeshStandardMaterial({color:0x334155,metalness:0.8});
+            const cm = new THREE.Mesh(seatParts.c,mat); const bm = new THREE.Mesh(seatParts.b,mat); const sm = new THREE.Mesh(seatParts.s,metalMat);
+            group.add(cm); group.add(bm); group.add(sm);
+            const rd = Math.max(0,posZ+12); group.position.set(posX,Math.pow(rd*0.18,1.25)*0.45,posZ); group.rotation.y=rotY;
+            const sd = {tier,mat,cushionMesh:cm,backrestMesh:bm,code};
+            cm.userData=sd; bm.userData=sd;
+            scene.add(group); seatObjects.push(cm,bm); seatsByTier[tier.id].push(sd);
+            if(code) seatByCode[code]=sd;
+        }
+
+        function buildAuditorium() {
+            const centerRows = [
+                {tier:TIERS_MAP.VIP,count:11,z:-10.5,spacing:1.1,id:'C1'},
+                {tier:TIERS_MAP.VIP,count:13,z:-8.8,spacing:1.1,id:'C2'},
+                {tier:TIERS_MAP.VIP,count:14,z:-7.1,spacing:1.1,id:'C3'},
+                {tier:TIERS_MAP.VIP,count:14,z:-5.4,spacing:1.1,id:'C4'},
+                {tier:TIERS_MAP.NEAR_VIP,count:17,z:-3.5,spacing:1.08,id:'C5'},
+                {tier:TIERS_MAP.NEAR_VIP,count:19,z:-1.7,spacing:1.08,id:'C6'},
+                {tier:TIERS_MAP.NEAR_VIP,count:12,split:6,gap:2.2,z:0.2,spacing:1.08,id:'C7'},
+                {tier:TIERS_MAP.NEAR_VIP,count:12,split:6,gap:2.2,z:2.1,spacing:1.08,id:'C8'},
+                {tier:TIERS_MAP.NEAR_VIP,count:12,split:6,gap:2.2,z:4.0,spacing:1.08,id:'C9'},
+            ];
+            centerRows.forEach(r=>{
+                if(r.split){ const half=r.split,leftWidth=(half-1)*r.spacing;
+                    for(let i=0;i<half;i++){ const x=-(r.gap/2)-leftWidth+(i*r.spacing); buildSeatMesh(r.tier,x,r.z+(x*x*0.008),Math.PI+x*0.015,r.tier.id.substring(0,4)+'_'+r.id+'_'+String(i+1).padStart(2,'0')); }
+                    for(let i=0;i<half;i++){ const x=(r.gap/2)+(i*r.spacing); buildSeatMesh(r.tier,x,r.z+(x*x*0.008),Math.PI+x*0.015,r.tier.id.substring(0,4)+'_'+r.id+'_'+String(half+i+1).padStart(2,'0')); }
+                } else { const tw=(r.count-1)*r.spacing;
+                    for(let i=0;i<r.count;i++){ const x=-(tw/2)+(i*r.spacing); buildSeatMesh(r.tier,x,r.z+(x*x*0.008),Math.PI+x*0.015,r.tier.id.substring(0,4)+'_'+r.id+'_'+String(i+1).padStart(2,'0')); }
+                }
+            });
+            const wingRows = [
+                {tier:TIERS_MAP.NEAR_VIP,count:3,z:-11.5,spacing:1.05,id:'L1'},{tier:TIERS_MAP.NEAR_VIP,count:5,z:-9.8,spacing:1.05,id:'L2'},
+                {tier:TIERS_MAP.NEAR_VIP,count:7,z:-8.0,spacing:1.05,id:'L3'},{tier:TIERS_MAP.NEAR_VIP,count:8,z:-6.2,spacing:1.05,id:'L4'},
+                {tier:TIERS_MAP.STANDARD,count:8,z:-4.2,spacing:1.05,id:'L5'},{tier:TIERS_MAP.STANDARD,count:11,z:-2.2,spacing:1.05,id:'L6'},
+                {tier:TIERS_MAP.STANDARD,count:8,z:0.0,spacing:1.05,id:'L7'},{tier:TIERS_MAP.STANDARD,count:8,z:2.0,spacing:1.05,id:'L8'},
+                {tier:TIERS_MAP.STANDARD,count:8,z:4.0,spacing:1.05,id:'L9'},{tier:TIERS_MAP.LAST_ROW,count:8,z:6.2,spacing:1.05,id:'L10'},
+            ];
+            wingRows.forEach(r=>{
+                const wsx=-13.0-(r.count*0.4);
+                for(let i=0;i<r.count;i++){ const lx=(i-r.count/2)*r.spacing; const x=wsx+(lx*Math.cos(0.28)); const z=r.z-(lx*Math.sin(0.28)); buildSeatMesh(r.tier,x,z,Math.PI-0.28,r.tier.id.substring(0,4)+'_'+r.id+'_'+String(i+1).padStart(2,'0')); }
+                const wsx2=13.0+(r.count*0.4);
+                const rId=r.id.replace(/^L/,'R');
+                for(let i=0;i<r.count;i++){ const lx=(i-r.count/2)*r.spacing; const x=wsx2+(lx*Math.cos(-0.28)); const z=r.z-(lx*Math.sin(-0.28)); buildSeatMesh(r.tier,x,z,Math.PI+0.28,r.tier.id.substring(0,4)+'_'+rId+'_'+String(i+1).padStart(2,'0')); }
+            });
+        }
+
+        async function loadSeatStatus() {
+            try {
+                const r = await fetch('/api/seats');
+                const seats = await r.json();
+                Object.entries(seats).forEach(([code,seat])=>{
+                    const sd = seatByCode[code];
+                    if(sd) { const color = seat.status==='assigned'?0x666666:seat.status==='held'?0x888888:sd.tier.color; sd.mat.color.setHex(color); }
+                });
+            } catch(e){}
+        }
+
+        const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+        let currentHoveredTier = null;
+        const tooltip = document.getElementById('seat-tooltip');
+
+        function setupInteraction() {
+            window.addEventListener('pointermove',e=>{ mouse.x=(e.clientX/window.innerWidth)*2-1; mouse.y=-(e.clientY/window.innerHeight)*2+1; tooltip.style.left=e.clientX+'px'; tooltip.style.top=e.clientY+'px'; raycastTier(); });
+            let isDragging=false;
+            window.addEventListener('pointerdown',()=>isDragging=false);
+            window.addEventListener('pointermove',()=>isDragging=true);
+            window.addEventListener('pointerup',e=>{
+                if(isDragging) return;
+                if(e.target.closest('.legend-card')||e.target.closest('.cart-card')||e.target.closest('.view-controls')||e.target.closest('.modal-overlay')) return;
+                raycaster.setFromCamera(mouse,camera);
+                const intersects = raycaster.intersectObjects(seatObjects);
+                if(intersects.length>0){ const sd=intersects[0].object.userData; if(sd&&sd.tier) openBuyModal(sd.tier.id); }
+            });
+        }
+
+        function raycastTier() {
+            raycaster.setFromCamera(mouse,camera);
+            const intersects = raycaster.intersectObjects(seatObjects);
+            if(intersects.length>0){ const sd=intersects[0].object.userData;
+                if(sd&&sd.tier){ if(currentHoveredTier!==sd.tier.id){ if(currentHoveredTier) seatsByTier[currentHoveredTier].forEach(s=>{s.cushionMesh.material.color.setHex(s.tier.color);s.backrestMesh.material.color.setHex(s.tier.color);}); currentHoveredTier=sd.tier.id; seatsByTier[currentHoveredTier].forEach(s=>{s.cushionMesh.material.color.setHex(0xffffff);s.backrestMesh.material.color.setHex(0xffffff);}); }
+                document.getElementById('tt-tier').innerText=sd.tier.name+' ('+sd.tier.price.toLocaleString('vi-VN')+' đ)'; document.getElementById('tt-tier').style.color=sd.tier.hex; document.getElementById('tt-sub').innerText='Còn '+(tierStats[sd.tier.id]?.available ?? '—')+' ghế trống · Click để chọn vé'; tooltip.style.display='block'; document.body.style.cursor='pointer'; return; } }
+            if(currentHoveredTier){ seatsByTier[currentHoveredTier].forEach(s=>{s.cushionMesh.material.color.setHex(s.tier.color);s.backrestMesh.material.color.setHex(s.tier.color);}); currentHoveredTier=null; tooltip.style.display='none'; document.body.style.cursor='default'; }
+        }
+
+        const cameraPresets = { overview:{pos:[0,38,52],target:[0,2,5]}, show:{pos:[0,7.2,-11.8],target:[0,6.2,-21.8]}, stage:{pos:[0,6,-18],target:[0,8,12]}, vip:{pos:[0,14,18],target:[0,2,-12]}, top:{pos:[0,65,2],target:[0,0,0]} };
+        function setCameraView(presetKey,btnElement){
+            if(btnElement){ document.querySelectorAll('.btn-view').forEach(b=>b.classList.remove('active')); btnElement.classList.add('active'); }
+            const showOverlay=document.getElementById('show-overlay');
+            if(showOverlay){ showOverlay.classList.toggle('active', presetKey==='show'); }
+            const p=cameraPresets[presetKey]; if(!p) return;
+            gsap.to(camera.position,{x:p.pos[0],y:p.pos[1],z:p.pos[2],duration:1.2,ease:'power2.inOut'});
+            gsap.to(controls.target,{x:p.target[0],y:p.target[1],z:p.target[2],duration:1.2,ease:'power2.inOut',onUpdate:()=>controls.update()});
+        }
+
+        window.addEventListener('resize',()=>{ if(!camera||!renderer) return; camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); });
+
+        function animate(){ requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera); }
+
+        loadTierStats();
+        init3DChart();
+    </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "dbUrl": "",
+  "adminPass": "",
+  "sessionSecret": "",
+  "vietqr": {
+    "bankBin": "970424",
+    "bankName": "Shinhan Bank",
+    "accountNo": "",
+    "accountName": "",
+    "template": "compact"
+  },
+  "resend": {
+    "apiKey": "",
+    "from": "VeSimple <onboarding@resend.dev>"
+  },
+  "event": {
+    "name": "SHOW ÂM NHẠC LIVE BAND: 9 GIỜ KÉM 15",
+    "date": "17/10/2026",
+    "checkinTime": "19:30",
+    "showTime": "20:45",
+    "venue": "NHÀ HÁT NGÔI SAO",
+    "address": "87 Láng Hạ, Ba Đình, Hà Nội",
+    "mapsQuery": "Nhà hát Ngôi Sao 87 Láng Hạ Hà Nội",
+    "hotline": "0916206529",
+    "email": "ntn2906@gmail.com",
+    "holdMinutes": 30
+  }
+}
