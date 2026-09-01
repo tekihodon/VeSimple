@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SÆ¡ Äá»“ KhÃ¡n PhÃ²ng 3D - {{ event.name }}</title>
+    <title>Sơ Đồ Khán Phòng 3D - {{ event.name }}</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -20,10 +20,9 @@
 
         .show-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; display: none; align-items: center; justify-content: center; background: rgba(8,12,20,0.35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 16px; overflow-y: auto; }
         .show-overlay.active { display: flex; animation: showOverlayFade 0.45s ease; }
-        .show-overlay img { max-width: 94vw; max-height: 82vh; width: auto; height: auto; border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.65); }
-        .show-card { background: rgba(15,23,42,0.92); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.65); padding: 20px; max-width: min(1500px, 98vw); max-height: 95vh; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; pointer-events: auto; scrollbar-width: none; }
-        .show-card::-webkit-scrollbar { display: none; }
-        .show-card img { width: min(1400px, 96vw); max-height: 78vh; border-radius: 12px; object-fit: cover; }
+        .show-overlay img { max-width: 82vw; max-height: 78vh; width: auto; height: auto; border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.65); }
+        .show-card { background: rgba(15,23,42,0.92); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.65); padding: 16px; max-width: 90vw; max-height: 84vh; display: flex; flex-direction: column; gap: 12px; overflow: hidden; pointer-events: auto; }
+        .show-card img { max-width: 86vw; max-height: 56vh; border-radius: 12px; object-fit: cover; }
         .show-info { color: #fff; text-align: center; max-width: 720px; margin: 0 auto; }
         .show-info h3 { font-size: 22px; font-weight: 800; color: #f59e0b; letter-spacing: 1px; margin-bottom: 4px; }
         .show-info p { font-size: 13px; color: #cbd5e1; margin-bottom: 10px; }
@@ -39,7 +38,7 @@
         .header h1 { font-size: 20px; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; background: linear-gradient(135deg,#ffffff,#cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header p { font-size: 12px; color: #f59e0b; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
 
-        .info-btn { position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(15,23,42,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 16px; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; min-height: 44px; -webkit-tap-highlight-color: transparent; }
+        .info-btn { position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(15,23,42,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 14px; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .info-btn:hover { background: rgba(255,255,255,0.15); }
 
         .info-panel { position: absolute; top: 0; left: 0; width: 340px; height: 100vh; z-index: 50; background: rgba(15,23,42,0.97); backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.1); transform: translateX(-100%); transition: transform 0.35s ease; overflow-y: auto; padding: 24px 20px; }
@@ -65,15 +64,13 @@
         .info-footer p { font-size: 12px; color: #fef3c7; line-height: 1.5; }
 
         .view-controls { position: absolute; top: 16px; right: 16px; z-index: 40; display: flex; gap: 6px; background: rgba(15,23,42,0.8); backdrop-filter: blur(12px); padding: 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-view { background: transparent; border: none; color: #94a3b8; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; min-height: 36px; -webkit-tap-highlight-color: transparent; }
-        @media (min-width: 769px) { .view-controls { top: 16px; right: 16px; flex-wrap: wrap; max-width: 200px; } }
+        .btn-view { background: transparent; border: none; color: #94a3b8; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .btn-view:hover, .btn-view.active { background: rgba(255,255,255,0.15); color: #fff; }
 
         .legend-card { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(15,23,42,0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 320px; max-width: calc(100vw - 40px); }
         .legend-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; }
-        .tier-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: rgba(255,255,255,0.04); border-radius: 10px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; min-height: 48px; -webkit-tap-highlight-color: transparent; }
+        .tier-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.04); border-radius: 10px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
         .tier-item:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); transform: translateY(-1px); }
-        .tier-item:active { background: rgba(255,255,255,0.2); transform: scale(0.98); }
         .tier-info-left { display: flex; align-items: center; gap: 10px; }
         .tier-dot { width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 10px currentColor; }
         .tier-name { font-size: 13px; font-weight: 700; }
@@ -137,55 +134,40 @@
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #10b981; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 700; z-index: 2000; box-shadow: 0 10px 25px rgba(16,185,129,0.4); transition: transform 0.3s ease; pointer-events: none; }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
-        .mobile-cart-btn { position: fixed; bottom: 16px; right: 16px; z-index: 90; background: #0f172a; color: #fff; width: 56px; height: 56px; border-radius: 50%; font-size: 13px; font-weight: 800; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; }
-        .mobile-cart-btn .cart-badge { position: absolute; top: -4px; right: -4px; background: #ef4444; color: #fff; font-size: 11px; font-weight: 800; min-width: 22px; height: 22px; border-radius: 11px; display: flex; align-items: center; justify-content: center; padding: 0 6px; border: 2px solid #0f172a; }
-
-        .view-collapsed-btn { position: absolute; top: 8px; right: 8px; z-index: 45; background: rgba(15,23,42,0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 13px; cursor: pointer; display: none; -webkit-tap-highlight-color: transparent; }
-        .view-collapsed-btn:active { transform: scale(0.95); }
-
-        .view-controls-expanded { position: absolute; top: 8px; right: 8px; z-index: 45; background: rgba(15,23,42,0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 6px; display: none; flex-direction: column; gap: 4px; }
-        .view-controls-expanded.open { display: flex; }
-        .view-controls-expanded .btn-view { background: transparent; border: none; color: #94a3b8; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; min-height: 42px; -webkit-tap-highlight-color: transparent; text-align: left; }
-        .view-controls-expanded .btn-view:hover, .view-controls-expanded .btn-view.active { background: rgba(255,255,255,0.15); color: #fff; }
-
+        .mobile-cart-btn { position: fixed; bottom: 60px; right: 16px; z-index: 90; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.4); display: none; align-items: center; gap: 8px; }
         @media (max-width: 768px) {
-            .header h1 { font-size: 14px; letter-spacing: 1px; } .header p { font-size: 9px; }
-            .info-btn { top: 8px; left: 8px; width: 44px; height: 44px; border-radius: 10px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-            .disclaimer-banner { top: 58px; padding: 5px 10px; border-radius: 10px; max-width: 92%; } .disclaimer-banner .text { font-size: 10px; }
-            .view-collapsed-btn { display: flex; }
-            .view-controls { display: none; }
-            .legend-card { position: fixed; bottom: 0; left: 0; width: 100vw; border-radius: 20px 20px 0 0; padding: 0 14px; background: rgba(15,23,42,0.95); transform: translateY(calc(100% - 56px)); transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); max-height: 75vh; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+            .header h1 { font-size: 15px; } .header p { font-size: 10px; }
+            .disclaimer-banner { top: 65px; padding: 6px 12px; border-radius: 12px; } .disclaimer-banner .text { font-size: 11px; }
+            .view-controls { top: auto; bottom: 80px; right: 50%; transform: translateX(50%); background: rgba(15,23,42,0.9); flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 24px); }
+            .legend-card { position: fixed; bottom: 0; left: 0; width: 100vw; border-radius: 20px 20px 0 0; padding: 14px; background: rgba(15,23,42,0.95); transform: translateY(calc(100% - 48px)); transition: transform 0.3s; }
             .legend-card.expanded { transform: translateY(0); }
-            .legend-toggle-bar { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 4px; min-height: 52px; -webkit-tap-highlight-color: transparent; }
-            .legend-title { font-size: 13px; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 1.5px; animation: bounce 2s ease-in-out infinite; }
-            @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+            .legend-toggle-bar { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
             .cart-card { display: none; }
             .mobile-cart-btn { display: flex; }
             .info-panel { width: 100vw; }
             .show-overlay img { max-width: 80vw; max-height: 52vh; border-radius: 12px; }
-            #seat-tooltip { font-size: 11px; padding: 6px 10px; }
         }
-        @media (min-width: 769px) { .mobile-cart-btn { display: none; } .legend-toggle-bar { pointer-events: none; } .view-collapsed-btn { display: none; } .view-controls-expanded { display: none !important; } }
+        @media (min-width: 769px) { .mobile-cart-btn { display: none; } .legend-toggle-bar { pointer-events: none; } }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>SÆ¡ Äá»“ Chá»— Ngá»“i KhÃ¡n PhÃ²ng</h1>
-        <p>9 Giá» KÃ©m 15</p>
+        <h1>Sơ Đồ Chỗ Ngồi Khán Phòng</h1>
+        <p>Liveshow: {{ event.name }}</p>
     </div>
 
-    <button class="info-btn" onclick="toggleInfoPanel()">â˜°</button>
+    <button class="info-btn" onclick="toggleInfoPanel()">ℹ️ {{ event.name[:10] }}</button>
 
     <div class="info-panel" id="info-panel">
-        <button class="close-btn" onclick="toggleInfoPanel()">âœ•</button>
+        <button class="close-btn" onclick="toggleInfoPanel()">✕</button>
         <h2>{{ event.name }}</h2>
         <p class="event-sub">{{ event.date }} | Check-in {{ event.checkinTime }} | Show {{ event.showTime }}</p>
-        <div class="info-section-title">ThÃ´ng Tin Sá»± Kiá»‡n</div>
-        <div class="info-row"><span class="icon">ðŸ“</span><div><div class="label">Venue</div><div class="value">{{ event.venue }}</div><div class="value" style="font-size:12px;color:#94a3b8;">{{ event.address }}</div></div></div>
-        <div class="info-row"><span class="icon">ðŸ“ž</span><div><div class="label">Hotline</div><div class="value">{{ event.hotline }}</div></div></div>
-        <div class="info-row"><span class="icon">âœ‰ï¸</span><div><div class="label">Email</div><div class="value" style="font-size:12px;">{{ event.email }}</div></div></div>
-        <div class="info-section-title">CÃ¡c Háº¡ng VÃ©</div>
+        <div class="info-section-title">Thông Tin Sự Kiện</div>
+        <div class="info-row"><span class="icon">📍</span><div><div class="label">Venue</div><div class="value">{{ event.venue }}</div><div class="value" style="font-size:12px;color:#94a3b8;">{{ event.address }}</div></div></div>
+        <div class="info-row"><span class="icon">📞</span><div><div class="label">Hotline</div><div class="value">{{ event.hotline }}</div></div></div>
+        <div class="info-row"><span class="icon">✉️</span><div><div class="label">Email</div><div class="value" style="font-size:12px;">{{ event.email }}</div></div></div>
+        <div class="info-section-title">Các Hạng Vé</div>
         <div class="ticket-list">
             {% for t in tiers %}
             <div class="ticket-item">
@@ -195,23 +177,20 @@
             {% endfor %}
         </div>
         <div class="info-footer">
-            <p>ðŸ’¡ SÆ¡ Ä‘á»“ 3D thá»ƒ hiá»‡n trá»±c quan vá»‹ trÃ­ khu vá»±c. Sá»‘ gháº¿ cá»¥ thá»ƒ sáº½ Ä‘Æ°á»£c BTC sáº¯p xáº¿p & cáº­p nháº­t tÃªn báº¡n trÆ°á»›c ngÃ y <strong>15/10/2026</strong>. Gháº¿ trÃªn sÆ¡ Ä‘á»“ giÃºp báº¡n chá»n Ä‘Ãºng vá»‹ trÃ­ khu vá»±c mong muá»‘n.</p>
+            <p>💡 Sơ đồ 3D thể hiện trực quan vị trí khu vực. Số ghế cụ thể sẽ được BTC sắp xếp & cập nhật tên bạn trước ngày <strong>15/10/2026</strong>. Ghế trên sơ đồ giúp bạn chọn đúng vị trí khu vực mong muốn.</p>
         </div>
     </div>
 
     <div class="disclaimer-banner">
-        <span class="icon">ðŸ’¡</span>
-        <span class="text">SÆ¡ Ä‘á»“ 3D thá»ƒ hiá»‡n trá»±c quan vá»‹ trÃ­ khu vá»±c. Sá»‘ gháº¿ cá»¥ thá»ƒ sáº½ Ä‘Æ°á»£c BTC sáº¯p xáº¿p & cáº­p nháº­t tÃªn báº¡n trÆ°á»›c ngÃ y <strong>15/10/2026</strong>.</span>
+        <span class="icon">💡</span>
+        <span class="text">Sơ đồ 3D thể hiện trực quan vị trí khu vực. Số ghế cụ thể sẽ được BTC sắp xếp & cập nhật tên bạn trước ngày <strong>15/10/2026</strong>.</span>
     </div>
 
     <div class="show-overlay active" id="show-overlay">
         <div class="show-card">
-            <picture>
-                <source media="(min-width: 769px)" srcset="/static/banner_ngang.png">
-                <img id="show-banner" src="{{ show['banner'] if show and show.get('banner') else '/static/banner.jpg' }}" alt="ChÆ°Æ¡ng trÃ¬nh biá»ƒu diá»…n">
-            </picture>
+            <img id="show-banner" src="{{ show['banner'] if show and show.get('banner') else '/static/banner.jpg' }}" alt="Chương trình biểu diễn">
             <div class="show-info">
-                <h3 id="show-title">{{ show['title'] if show and show.get('title') else 'SHOW Ã‚M NHáº C' }}</h3>
+                <h3 id="show-title">{{ show['title'] if show and show.get('title') else 'SHOW ÂM NHẠC' }}</h3>
                 <p id="show-subtitle">{{ show['subtitle'] if show and show.get('subtitle') else event.name }}</p>
                 {% if show and show.get('items') %}
                 <ul class="show-timeline" id="show-timeline">
@@ -230,108 +209,101 @@
     </div>
 
     <div class="view-controls">
-        <button class="btn-view" id="btn-view-overview" onclick="setCameraView('overview', this)">Tá»•ng Quan</button>
-        <button class="btn-view active" onclick="setCameraView('show', this)">ChÆ°Æ¡ng trÃ¬nh</button>
+        <button class="btn-view" id="btn-view-overview" onclick="setCameraView('overview', this)">Tổng Quan</button>
+        <button class="btn-view active" onclick="setCameraView('show', this)">Chương trình</button>
+        <button class="btn-view" onclick="setCameraView('stage', this)">Sân Khấu</button>
         <button class="btn-view" onclick="setCameraView('vip', this)">Khu VIP</button>
-        <button class="btn-view" onclick="setCameraView('top', this)">ToÃ n Cáº£nh</button>
-    </div>
-
-    <button class="view-collapsed-btn" id="view-collapsed-btn" onclick="toggleViewControls()">ðŸ“·</button>
-    <div class="view-controls-expanded" id="view-controls-expanded">
-        <button class="btn-view" id="mbtn-view-overview" onclick="setCameraViewMobile('overview', this)">ðŸ“· Tá»•ng Quan</button>
-        <button class="btn-view active" id="mbtn-view-show" onclick="setCameraViewMobile('show', this)">ðŸŽ­ ChÆ°Æ¡ng trÃ¬nh</button>
-        <button class="btn-view" id="mbtn-view-vip" onclick="setCameraViewMobile('vip', this)">â­ Khu VIP</button>
-        <button class="btn-view" id="mbtn-view-top" onclick="setCameraViewMobile('top', this)">ðŸ—º ToÃ n Cáº£nh</button>
+        <button class="btn-view" onclick="setCameraView('top', this)">Toàn Cảnh</button>
     </div>
 
     <div class="legend-card" id="legend-card">
         <div class="legend-toggle-bar" onclick="toggleMobileLegend()">
-            <div class="legend-title"><span>ðŸŽ« CHá»ŒN Háº NG GHáº¾</span></div>
-            <span style="font-size:12px;color:#94a3b8;" id="legend-arrow">â–²</span>
+            <div class="legend-title"><span>Phân Hạng Ghế (Click để chọn mua)</span></div>
+            <span style="font-size:12px;color:#94a3b8;" id="legend-arrow">▲</span>
         </div>
         <div class="legend-list" id="legend-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
     </div>
 
     <div class="cart-card">
-        <div class="cart-header"><span>Giá» HÃ ng Mua VÃ©</span><span style="cursor:pointer;color:#ef4444;" onclick="clearCart()">XÃ³a táº¥t cáº£</span></div>
-        <div class="cart-items-list" id="cart-list"><span style="font-size:11px;color:#64748b;">ChÆ°a cÃ³ háº¡ng vÃ© nÃ o Ä‘Æ°á»£c chá»n</span></div>
-        <div class="cart-total"><span style="font-size:12px;color:#94a3b8;">Tá»•ng tiá»n</span><span class="cart-total-value" id="cart-total">0 Ä‘</span></div>
-        <button class="btn-checkout" id="btn-checkout" disabled onclick="openCheckout()">Tiáº¿p Tá»¥c Äáº·t VÃ© â†’</button>
+        <div class="cart-header"><span>Giỏ Hàng Mua Vé</span><span style="cursor:pointer;color:#ef4444;" onclick="clearCart()">Xóa tất cả</span></div>
+        <div class="cart-items-list" id="cart-list"><span style="font-size:11px;color:#64748b;">Chưa có hạng vé nào được chọn</span></div>
+        <div class="cart-total"><span style="font-size:12px;color:#94a3b8;">Tổng tiền</span><span class="cart-total-value" id="cart-total">0 đ</span></div>
+        <button class="btn-checkout" id="btn-checkout" disabled onclick="openCheckout()">Tiếp Tục Đặt Vé →</button>
     </div>
 
-    <button class="mobile-cart-btn" onclick="openMobileCart()">
-        <span style="font-size:22px;">ðŸ›’</span>
-        <span class="cart-badge" id="mobile-cart-count">0</span>
-    </button>
+    <button class="mobile-cart-btn" onclick="openMobileCart()">🛒 Giỏ Hàng (<span id="mobile-cart-count">0</span>)</button>
 
     <div id="seat-tooltip">
-        <div id="tt-tier" style="font-size:10px;font-weight:700;text-transform:uppercase;">Háº NG Ná»ž HOA</div>
-        <div id="tt-sub" style="font-size:12px;font-weight:800;color:#38bdf8;">Click Ä‘á»ƒ chá»n sá»‘ lÆ°á»£ng vÃ©</div>
+        <div id="tt-tier" style="font-size:10px;font-weight:700;text-transform:uppercase;">HẠNG NỞ HOA</div>
+        <div id="tt-sub" style="font-size:12px;font-weight:800;color:#38bdf8;">Click để chọn số lượng vé</div>
     </div>
 
+    <!-- Modal Chọn Số Lượng -->
     <div class="modal-overlay" id="buy-modal">
         <div class="modal-card">
             <div class="modal-header">
-                <div><div class="modal-title-tier" id="modal-tier-name">Háº¡ng Ná»Ÿ Hoa</div><div class="modal-price-tag" id="modal-tier-price">400.000 Ä‘ / vÃ©</div><div id="modal-avail" style="font-size:12px;font-weight:700;color:#34d399;margin-top:6px;"></div></div>
-                <button class="btn-close-modal" onclick="closeBuyModal()">âœ•</button>
+                <div><div class="modal-title-tier" id="modal-tier-name">Hạng Nở Hoa</div><div class="modal-price-tag" id="modal-tier-price">400.000 đ / vé</div><div id="modal-avail" style="font-size:12px;font-weight:700;color:#34d399;margin-top:6px;"></div></div>
+                <button class="btn-close-modal" onclick="closeBuyModal()">✕</button>
             </div>
-            <div class="modal-disclaimer">ðŸ“Œ <strong>LÆ°u Ã½:</strong> Gháº¿ trÃªn sÆ¡ Ä‘á»“ 3D giÃºp báº¡n chá»n Ä‘Ãºng vá»‹ trÃ­ khu vá»±c. TÃªn & sá»‘ gháº¿ cá»¥ thá»ƒ sáº½ do BTC sáº¯p xáº¿p trÆ°á»›c ngÃ y <strong>15/10/2026</strong>.</div>
+            <div class="modal-disclaimer">📌 <strong>Lưu ý:</strong> Ghế trên sơ đồ 3D giúp bạn chọn đúng vị trí khu vực. Tên & số ghế cụ thể sẽ do BTC sắp xếp trước ngày <strong>15/10/2026</strong>.</div>
             <div class="quantity-control">
-                <span style="font-size:13px;font-weight:600;color:#cbd5e1;">Sá»‘ lÆ°á»£ng vÃ©:</span>
+                <span style="font-size:13px;font-weight:600;color:#cbd5e1;">Số lượng vé:</span>
                 <div class="qty-btns">
                     <button class="btn-qty" onclick="changeQty(-1)">-</button>
                     <span id="modal-qty" style="font-size:16px;font-weight:800;width:24px;text-align:center;">1</span>
                     <button class="btn-qty" onclick="changeQty(1)">+</button>
                 </div>
             </div>
-            <button class="btn-add-to-cart" onclick="confirmAddToCart()">ðŸ›’ ThÃªm VÃ o Giá» HÃ ng</button>
+            <button class="btn-add-to-cart" onclick="confirmAddToCart()">🛒 Thêm Vào Giỏ Hàng</button>
         </div>
     </div>
 
+    <!-- Modal Checkout -->
     <div class="modal-overlay" id="checkout-modal">
         <div class="modal-card checkout-form-modal">
             <div class="modal-header">
-                <div><div class="modal-title-tier">ThÃ´ng Tin Äáº·t VÃ©</div><div class="modal-price-tag" id="checkout-total-summary">0 Ä‘</div></div>
-                <button class="btn-close-modal" onclick="closeCheckout()">âœ•</button>
+                <div><div class="modal-title-tier">Thông Tin Đặt Vé</div><div class="modal-price-tag" id="checkout-total-summary">0 đ</div></div>
+                <button class="btn-close-modal" onclick="closeCheckout()">✕</button>
             </div>
             <div class="checkout-summary" id="checkout-items-summary"></div>
-            <div class="form-group"><label>Há» vÃ  tÃªn</label><input type="text" name="full_name" id="cf-full_name" required placeholder="Nháº­p há» tÃªn Ä‘áº§y Ä‘á»§"></div>
-            <div class="form-group"><label>Sá»‘ Ä‘iá»‡n thoáº¡i</label><input type="tel" name="phone" id="cf-phone" required placeholder="0xxx xxx xxx"></div>
+            <div class="form-group"><label>Họ và tên</label><input type="text" name="full_name" id="cf-full_name" required placeholder="Nhập họ tên đầy đủ"></div>
+            <div class="form-group"><label>Số điện thoại</label><input type="tel" name="phone" id="cf-phone" required placeholder="0xxx xxx xxx"></div>
             <div class="form-group"><label>Email</label><input type="email" name="email" id="cf-email" required placeholder="email@example.com"></div>
-            <button class="btn-add-to-cart" onclick="submitCheckout()">Tiáº¿p Tá»¥c Thanh ToÃ¡n</button>
-            <button class="btn-back-to-chart" onclick="closeCheckout()">â† Quay láº¡i sÆ¡ Ä‘á»“</button>
+            <button class="btn-add-to-cart" onclick="submitCheckout()">Tiếp Tục Thanh Toán</button>
+            <button class="btn-back-to-chart" onclick="closeCheckout()">← Quay lại sơ đồ</button>
         </div>
     </div>
 
+    <!-- Payment Overlay -->
     <div class="payment-overlay" id="payment-overlay">
         <div class="payment-card">
-            <h2>Thanh ToÃ¡n VietQR</h2>
-            <p class="sub">QuÃ©t mÃ£ QR báº±ng á»©ng dá»¥ng ngÃ¢n hÃ ng</p>
+            <h2>Thanh Toán VietQR</h2>
+            <p class="sub">Quét mã QR bằng ứng dụng ngân hàng</p>
             <div class="payment-code" id="payment-order-code"></div>
             <div class="payment-qr"><img id="qr-image" src="" alt="QR"></div>
             <div class="bank-box">
-                <p><span class="bl">NgÃ¢n hÃ ng</span><span class="bv">{{ config.vietqr.bankName }}</span></p>
-                <p><span class="bl">Sá»‘ tÃ i khoáº£n</span><span class="bv">{{ config.vietqr.accountNo }}</span></p>
-                <p><span class="bl">TÃªn TK</span><span class="bv">{{ config.vietqr.accountName }}</span></p>
-                <p><span class="bl">Sá»‘ tiá»n</span><span class="bv" id="payment-amount"></span></p>
+                <p><span class="bl">Ngân hàng</span><span class="bv">{{ config.vietqr.bankName }}</span></p>
+                <p><span class="bl">Số tài khoản</span><span class="bv">{{ config.vietqr.accountNo }}</span></p>
+                <p><span class="bl">Tên TK</span><span class="bv">{{ config.vietqr.accountName }}</span></p>
+                <p><span class="bl">Số tiền</span><span class="bv" id="payment-amount"></span></p>
             </div>
-            <p style="font-size:12px;color:#f59e0b;background:rgba(245,158,11,0.1);padding:12px;border-radius:8px;margin:16px 0;"><strong>Ná»™i dung chuyá»ƒn:</strong> <span id="payment-code-text" style="font-weight:800;"></span></p>
-            <p style="font-size:11px;color:#94a3b8;margin-bottom:16px;">Chuyá»ƒn Ä‘Ãºng sá»‘ tiá»n & ná»™i dung. ÄÆ¡n sáº½ Ä‘Æ°á»£c xÃ¡c nháº­n sau khi BTC kiá»ƒm tra.</p>
-            <button class="btn-pay-confirm" id="confirm-payment-btn" onclick="confirmPayment()">âœ“ TÃ´i Ä‘Ã£ chuyá»ƒn khoáº£n xong</button>
-            <button class="btn-pay-back" onclick="closePayment()">Quay láº¡i</button>
+            <p style="font-size:12px;color:#f59e0b;background:rgba(245,158,11,0.1);padding:12px;border-radius:8px;margin:16px 0;"><strong>Nội dung chuyển:</strong> <span id="payment-code-text" style="font-weight:800;"></span></p>
+            <p style="font-size:11px;color:#94a3b8;margin-bottom:16px;">Chuyển đúng số tiền & nội dung. Đơn sẽ được xác nhận sau khi BTC kiểm tra.</p>
+            <button class="btn-pay-confirm" id="confirm-payment-btn" onclick="confirmPayment()">✓ Tôi đã chuyển khoản xong</button>
+            <button class="btn-pay-back" onclick="closePayment()">Quay lại</button>
         </div>
     </div>
 
-    <div class="toast" id="toast-msg">ÄÃ£ thÃªm vÃ© vÃ o giá» hÃ ng!</div>
+    <div class="toast" id="toast-msg">Đã thêm vé vào giỏ hàng!</div>
 
     <canvas id="webgl-canvas"></canvas>
 
     <script>
         const TIERS_MAP = {
-            VIP: { id:'VIP', name:'Háº¡ng Ná»Ÿ Hoa', price:400000, color:0xf59e0b, hex:'#f59e0b', emissive:0x663d00 },
-            NEAR_VIP: { id:'NEAR_VIP', name:'Háº¡ng Thá»©c Tá»‰nh', price:350000, color:0xef4444, hex:'#ef4444', emissive:0x5a1111 },
-            STANDARD: { id:'STANDARD', name:'Háº¡ng Thanh XuÃ¢n', price:300000, color:0x3b82f6, hex:'#3b82f6', emissive:0x0f2f64 },
-            LAST_ROW: { id:'LAST_ROW', name:'Háº¡ng TÃ­ch Táº¯c', price:250000, color:0xec4899, hex:'#ec4899', emissive:0x540f30 }
+            VIP: { id:'VIP', name:'Hạng Nở Hoa', price:400000, color:0xf59e0b, hex:'#f59e0b', emissive:0x663d00 },
+            NEAR_VIP: { id:'NEAR_VIP', name:'Hạng Thức Tỉnh', price:350000, color:0xef4444, hex:'#ef4444', emissive:0x5a1111 },
+            STANDARD: { id:'STANDARD', name:'Hạng Thanh Xuân', price:300000, color:0x3b82f6, hex:'#3b82f6', emissive:0x0f2f64 },
+            LAST_ROW: { id:'LAST_ROW', name:'Hạng Tích Tắc', price:250000, color:0xec4899, hex:'#ec4899', emissive:0x540f30 }
         };
         const TIER_NO = { VIP:1, NEAR_VIP:2, STANDARD:3, LAST_ROW:4 };
 
@@ -360,8 +332,8 @@
                 const div = document.createElement('div');
                 div.className = 'tier-item';
                 div.onclick = () => openBuyModal(t.id);
-                const avail = tierStats[t.id]?.available ?? 'â€”';
-                div.innerHTML = `<div class="tier-info-left"><div class="tier-dot" style="background:${t.hex};"></div><div><div class="tier-name">${t.name}</div><div class="tier-sub">${avail} Gháº¿</div></div></div><div class="tier-price">${t.price.toLocaleString('vi-VN')} Ä‘</div>`;
+                const avail = tierStats[t.id]?.available ?? '—';
+                div.innerHTML = `<div class="tier-info-left"><div class="tier-dot" style="background:${t.hex};"></div><div><div class="tier-name">${t.name}</div><div class="tier-sub">${avail} Ghế</div></div></div><div class="tier-price">${t.price.toLocaleString('vi-VN')} đ</div>`;
                 list.appendChild(div);
             });
         }
@@ -373,9 +345,9 @@
             activeQty = 1;
             document.getElementById('modal-tier-name').innerText = t.name;
             document.getElementById('modal-tier-name').style.color = t.hex;
-            document.getElementById('modal-tier-price').innerText = t.price.toLocaleString('vi-VN') + ' Ä‘ / vÃ©';
+            document.getElementById('modal-tier-price').innerText = t.price.toLocaleString('vi-VN') + ' đ / vé';
             document.getElementById('modal-qty').innerText = activeQty;
-            document.getElementById('modal-avail').innerText = 'CÃ²n ' + (tierStats[tierId]?.available ?? 'â€”') + ' gháº¿ trá»‘ng';
+            document.getElementById('modal-avail').innerText = 'Còn ' + (tierStats[tierId]?.available ?? '—') + ' ghế trống';
             document.getElementById('buy-modal').classList.add('active');
         }
         function closeBuyModal() { document.getElementById('buy-modal').classList.remove('active'); }
@@ -387,9 +359,9 @@
             try {
                 const r = await fetch('/api/cart', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tier_id:tId, qty:activeQty}) });
                 const data = await r.json();
-                if (data.ok) { cartState[tId] = (cartState[tId]||0) + activeQty; updateCartUI(); closeBuyModal(); loadTierStats(); showToast(`ÄÃ£ thÃªm ${activeQty} vÃ© [${activeTierForModal.name}] vÃ o giá» hÃ ng!`); }
-                else showToast(data.error||'CÃ³ lá»—i xáº£y ra');
-            } catch(e) { showToast('Lá»—i káº¿t ná»‘i'); }
+                if (data.ok) { cartState[tId] = (cartState[tId]||0) + activeQty; updateCartUI(); closeBuyModal(); loadTierStats(); showToast(`Đã thêm ${activeQty} vé [${activeTierForModal.name}] vào giỏ hàng!`); }
+                else showToast(data.error||'Có lỗi xảy ra');
+            } catch(e) { showToast('Lỗi kết nối'); }
         }
 
         async function clearCart() {
@@ -399,18 +371,18 @@
         function updateCartUI() {
             const cartList=document.getElementById('cart-list'), cartTotal=document.getElementById('cart-total'), btnCheckout=document.getElementById('btn-checkout'), mobileCartCount=document.getElementById('mobile-cart-count');
             let totalMoney=0, totalSeatsCount=0; cartList.innerHTML='';
-            Object.keys(cartState).forEach(tId=>{ const qty=cartState[tId]; if(qty>0&&TIERS_MAP[tId]){ const tier=TIERS_MAP[tId]; const itemMoney=tier.price*qty; totalMoney+=itemMoney; totalSeatsCount+=qty; const row=document.createElement('div'); row.className='cart-item-row'; row.innerHTML=`<div><strong style="color:${tier.hex}">${tier.name}</strong><div style="font-size:10px;color:#94a3b8;">x${qty} vÃ© Â· CÃ²n ${tierStats[tId]?.available ?? 'â€”'} gháº¿</div></div><div style="font-weight:700;">${itemMoney.toLocaleString('vi-VN')} Ä‘</div>`; cartList.appendChild(row); }});
+            Object.keys(cartState).forEach(tId=>{ const qty=cartState[tId]; if(qty>0&&TIERS_MAP[tId]){ const tier=TIERS_MAP[tId]; const itemMoney=tier.price*qty; totalMoney+=itemMoney; totalSeatsCount+=qty; const row=document.createElement('div'); row.className='cart-item-row'; row.innerHTML=`<div><strong style="color:${tier.hex}">${tier.name}</strong><div style="font-size:10px;color:#94a3b8;">x${qty} vé · Còn ${tierStats[tId]?.available ?? '—'} ghế</div></div><div style="font-weight:700;">${itemMoney.toLocaleString('vi-VN')} đ</div>`; cartList.appendChild(row); }});
             mobileCartCount.innerText=totalSeatsCount;
-            if(totalSeatsCount===0){ cartList.innerHTML='<span style="font-size:11px;color:#64748b;">ChÆ°a cÃ³ háº¡ng vÃ© nÃ o Ä‘Æ°á»£c chá»n</span>'; cartTotal.innerText='0 Ä‘'; btnCheckout.disabled=true; }
-            else { cartTotal.innerText=totalMoney.toLocaleString('vi-VN')+' Ä‘'; btnCheckout.disabled=false; }
+            if(totalSeatsCount===0){ cartList.innerHTML='<span style="font-size:11px;color:#64748b;">Chưa có hạng vé nào được chọn</span>'; cartTotal.innerText='0 đ'; btnCheckout.disabled=true; }
+            else { cartTotal.innerText=totalMoney.toLocaleString('vi-VN')+' đ'; btnCheckout.disabled=false; }
         }
 
         async function openCheckout() {
             const r = await fetch('/api/cart');
             const data = await r.json();
-            if(!data.items||data.items.length===0){showToast('Giá» hÃ ng trá»‘ng');return;}
-            document.getElementById('checkout-items-summary').innerHTML = '<strong style="font-size:12px;color:#94a3b8;">VÃ© Ä‘Ã£ chá»n:</strong>' + data.items.map(i=>`<div class="checkout-summary-row"><span>${i.name} x${i.qty}</span><span>${(i.price*i.qty).toLocaleString('vi-VN')} Ä‘</span></div>`).join('') + `<div class="checkout-summary-row total"><span>Tá»•ng cá»™ng</span><span>${data.total.toLocaleString('vi-VN')} Ä‘</span></div>`;
-            document.getElementById('checkout-total-summary').innerText = data.total.toLocaleString('vi-VN') + ' Ä‘';
+            if(!data.items||data.items.length===0){showToast('Giỏ hàng trống');return;}
+            document.getElementById('checkout-items-summary').innerHTML = '<strong style="font-size:12px;color:#94a3b8;">Vé đã chọn:</strong>' + data.items.map(i=>`<div class="checkout-summary-row"><span>${i.name} x${i.qty}</span><span>${(i.price*i.qty).toLocaleString('vi-VN')} đ</span></div>`).join('') + `<div class="checkout-summary-row total"><span>Tổng cộng</span><span>${data.total.toLocaleString('vi-VN')} đ</span></div>`;
+            document.getElementById('checkout-total-summary').innerText = data.total.toLocaleString('vi-VN') + ' đ';
             document.getElementById('checkout-modal').classList.add('active');
         }
         function closeCheckout() { document.getElementById('checkout-modal').classList.remove('active'); }
@@ -420,38 +392,39 @@
             const full_name = document.getElementById('cf-full_name').value.trim();
             const phone = document.getElementById('cf-phone').value.trim();
             const email = document.getElementById('cf-email').value.trim();
-            if(!full_name||!phone||!email){showToast('Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ thÃ´ng tin');return;}
+            if(!full_name||!phone||!email){showToast('Vui lòng điền đầy đủ thông tin');return;}
             try {
                 const r = await fetch('/api/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({full_name,phone,email}) });
                 const result = await r.json();
                 if(result.ok) {
                     currentOrder = result.order;
-                    document.getElementById('payment-order-code').innerText = 'MÃ£ Ä‘Æ¡n: ' + result.order.code;
+                    document.getElementById('payment-order-code').innerText = 'Mã đơn: ' + result.order.code;
                     document.getElementById('qr-image').src = result.qr_url;
-                    document.getElementById('payment-amount').innerText = result.order.total.toLocaleString('vi-VN') + ' Ä‘';
+                    document.getElementById('payment-amount').innerText = result.order.total.toLocaleString('vi-VN') + ' đ';
                     document.getElementById('payment-code-text').innerText = result.order.code;
                     document.getElementById('confirm-payment-btn').dataset.orderId = result.order.id;
                     cartState={}; updateCartUI();
                     document.getElementById('checkout-modal').classList.remove('active');
                     document.getElementById('payment-overlay').classList.add('active');
-                } else showToast(result.error||'CÃ³ lá»—i xáº£y ra');
-            } catch(e) { showToast('Lá»—i káº¿t ná»‘i'); }
+                } else showToast(result.error||'Có lỗi xảy ra');
+            } catch(e) { showToast('Lỗi kết nối'); }
         }
 
         function confirmPayment() {
             const orderId = document.getElementById('confirm-payment-btn').dataset.orderId;
             if(!orderId) return;
             document.getElementById('payment-overlay').classList.remove('active');
-            showToast('âœ… ÄÃ£ ghi nháº­n Ä‘Æ¡n! Chá» BTC xÃ¡c nháº­n thanh toÃ¡n.');
+            showToast('✅ Đã ghi nhận đơn! Chờ BTC xác nhận thanh toán.');
             currentOrder = null;
         }
         function closePayment() { document.getElementById('payment-overlay').classList.remove('active'); }
 
         function showToast(msg) { const toast=document.getElementById('toast-msg'); toast.innerText=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000); }
 
-        function toggleMobileLegend() { if(window.innerWidth<=768){ const card=document.getElementById('legend-card'); const arrow=document.getElementById('legend-arrow'); card.classList.toggle('expanded'); arrow.innerText=card.classList.contains('expanded')?'â–¼':'â–²'; } }
+        function toggleMobileLegend() { if(window.innerWidth<=768){ const card=document.getElementById('legend-card'); const arrow=document.getElementById('legend-arrow'); card.classList.toggle('expanded'); arrow.innerText=card.classList.contains('expanded')?'▼':'▲'; } }
         function openMobileCart() { const cc=document.querySelector('.cart-card'); if(cc.style.display==='flex') cc.style.display='none'; else { cc.style.display='flex'; cc.style.position='fixed'; cc.style.bottom='110px'; cc.style.right='16px'; cc.style.zIndex='100'; } }
 
+        // 3D Scene
         let scene, camera, renderer, controls;
         let seatObjects = [];
         let seatsByTier = {VIP:[],NEAR_VIP:[],STANDARD:[],LAST_ROW:[]};
@@ -484,11 +457,10 @@
             const platform = new THREE.Mesh(new THREE.BoxGeometry(26,1.2,7.5), new THREE.MeshStandardMaterial({color:0x1e293b,roughness:0.3,metalness:0.4})); platform.position.set(0,0.6,-18); g.add(platform);
             const trim = new THREE.Mesh(new THREE.BoxGeometry(26.4,0.1,7.9), new THREE.MeshBasicMaterial({color:0x38bdf8})); trim.position.set(0,1.25,-18); g.add(trim);
             const floor = new THREE.Mesh(new THREE.PlaneGeometry(100,100), new THREE.MeshStandardMaterial({color:0x070b12,roughness:0.8})); floor.rotation.x=-Math.PI/2; floor.position.y=-0.01; g.add(floor);
-            const bannerSrc = window.innerWidth >= 769 ? '/static/banner_ngang.png' : '/static/banner.jpg';
-            new THREE.TextureLoader().load(bannerSrc, function(tex){
+            new THREE.TextureLoader().load('/static/banner.jpg', function(tex){
                 tex.encoding = THREE.sRGBEncoding;
                 const ar = tex.image.width / tex.image.height;
-                const bh = window.innerWidth >= 769 ? 13.5 : 10.5, bw = bh * ar;
+                const bh = 10.5, bw = bh * ar;
                 const banner = new THREE.Mesh(new THREE.PlaneGeometry(bw,bh), new THREE.MeshBasicMaterial({map:tex}));
                 banner.position.set(0,6.5,-21.8);
                 g.add(banner);
@@ -561,155 +533,28 @@
         const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
         let currentHoveredTier = null;
         const tooltip = document.getElementById('seat-tooltip');
-        let pointerStartPos = null;
-        let hasPointerMoved = false;
-        const DRAG_THRESHOLD = 8;
-
-        function updateMouseFromEvent(e) {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-            tooltip.style.left = e.clientX + 'px';
-            tooltip.style.top = e.clientY + 'px';
-        }
 
         function setupInteraction() {
-            window.addEventListener('pointermove', e => {
-                updateMouseFromEvent(e);
-                if (pointerStartPos) {
-                    const dx = e.clientX - pointerStartPos.x;
-                    const dy = e.clientY - pointerStartPos.y;
-                    if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
-                        hasPointerMoved = true;
-                    }
-                }
-                raycastTier();
-            });
-
-            window.addEventListener('pointerdown', e => {
-                pointerStartPos = { x: e.clientX, y: e.clientY };
-                hasPointerMoved = false;
-            });
-
-            window.addEventListener('pointerup', e => {
-                if (hasPointerMoved) {
-                    pointerStartPos = null;
-                    return;
-                }
-                pointerStartPos = null;
-                if (e.target.closest('.legend-card') || e.target.closest('.cart-card') || e.target.closest('.modal-overlay') || e.target.closest('.info-panel') || e.target.closest('.view-controls') || e.target.closest('.mobile-cart-btn') || e.target.closest('.header') || e.target.closest('.disclaimer-banner') || e.target.closest('.info-btn')) return;
-                updateMouseFromEvent(e);
-                raycaster.setFromCamera(mouse, camera);
+            window.addEventListener('pointermove',e=>{ mouse.x=(e.clientX/window.innerWidth)*2-1; mouse.y=-(e.clientY/window.innerHeight)*2+1; tooltip.style.left=e.clientX+'px'; tooltip.style.top=e.clientY+'px'; raycastTier(); });
+            let isDragging=false;
+            window.addEventListener('pointerdown',()=>isDragging=false);
+            window.addEventListener('pointermove',()=>isDragging=true);
+            window.addEventListener('pointerup',e=>{
+                if(isDragging) return;
+                if(e.target.closest('.legend-card')||e.target.closest('.cart-card')||e.target.closest('.view-controls')||e.target.closest('.modal-overlay')) return;
+                raycaster.setFromCamera(mouse,camera);
                 const intersects = raycaster.intersectObjects(seatObjects);
-                if (intersects.length > 0) {
-                    const sd = intersects[0].object.userData;
-                    if (sd && sd.tier) {
-                        highlightTierSeats(sd.tier.id);
-                        openBuyModal(sd.tier.id);
-                    }
-                }
-            });
-
-            window.addEventListener('touchstart', e => {
-                if (e.target.closest('.legend-card') || e.target.closest('.cart-card') || e.target.closest('.modal-overlay')) return;
-                const touch = e.touches[0];
-                pointerStartPos = { x: touch.clientX, y: touch.clientY };
-                hasPointerMoved = false;
-            }, { passive: true });
-
-            window.addEventListener('touchmove', e => {
-                if (e.target.closest('.legend-card') || e.target.closest('.cart-card') || e.target.closest('.modal-overlay')) return;
-                const touch = e.touches[0];
-                if (pointerStartPos) {
-                    const dx = touch.clientX - pointerStartPos.x;
-                    const dy = touch.clientY - pointerStartPos.y;
-                    if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
-                        hasPointerMoved = true;
-                    }
-                }
-                updateMouseFromEvent({ clientX: touch.clientX, clientY: touch.clientY });
-                raycastTier();
-            }, { passive: true });
-
-            window.addEventListener('touchend', e => {
-                if (hasPointerMoved) return;
-                if (e.target.closest('.legend-card') || e.target.closest('.cart-card') || e.target.closest('.modal-overlay') || e.target.closest('.info-panel') || e.target.closest('.view-controls') || e.target.closest('.mobile-cart-btn') || e.target.closest('.header') || e.target.closest('.disclaimer-banner') || e.target.closest('.info-btn')) return;
-                const touch = e.changedTouches[0];
-                updateMouseFromEvent({ clientX: touch.clientX, clientY: touch.clientY });
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(seatObjects);
-                if (intersects.length > 0) {
-                    const sd = intersects[0].object.userData;
-                    if (sd && sd.tier) {
-                        highlightTierSeats(sd.tier.id);
-                        openBuyModal(sd.tier.id);
-                    }
-                }
-                pointerStartPos = null;
-            });
-        }
-
-        function highlightTierSeats(tierId) {
-            if (currentHoveredTier) {
-                seatsByTier[currentHoveredTier].forEach(s => {
-                    s.cushionMesh.material.color.setHex(s.tier.color);
-                    s.backrestMesh.material.color.setHex(s.tier.color);
-                });
-            }
-            currentHoveredTier = tierId;
-            seatsByTier[tierId].forEach(s => {
-                s.cushionMesh.material.color.setHex(0xffffff);
-                s.backrestMesh.material.color.setHex(0xffffff);
+                if(intersects.length>0){ const sd=intersects[0].object.userData; if(sd&&sd.tier) openBuyModal(sd.tier.id); }
             });
         }
 
         function raycastTier() {
-            raycaster.setFromCamera(mouse, camera);
+            raycaster.setFromCamera(mouse,camera);
             const intersects = raycaster.intersectObjects(seatObjects);
-            if (intersects.length > 0) {
-                const sd = intersects[0].object.userData;
-                if (sd && sd.tier) {
-                    if (currentHoveredTier !== sd.tier.id) {
-                        highlightTierSeats(sd.tier.id);
-                    }
-                    document.getElementById('tt-tier').innerText = sd.tier.name + ' (' + sd.tier.price.toLocaleString('vi-VN') + ' Ä‘)';
-                    document.getElementById('tt-tier').style.color = sd.tier.hex;
-                    document.getElementById('tt-sub').innerText = 'CÃ²n ' + (tierStats[sd.tier.id]?.available ?? 'â€”') + ' gháº¿ trá»‘ng Â· Click Ä‘á»ƒ chá»n vÃ©';
-                    tooltip.style.display = 'block';
-                    document.body.style.cursor = 'pointer';
-                    return;
-                }
-            }
-            if (currentHoveredTier) {
-                seatsByTier[currentHoveredTier].forEach(s => {
-                    s.cushionMesh.material.color.setHex(s.tier.color);
-                    s.backrestMesh.material.color.setHex(s.tier.color);
-                });
-                currentHoveredTier = null;
-                tooltip.style.display = 'none';
-                document.body.style.cursor = 'default';
-            }
-        }
-
-        function toggleViewControls() {
-            const expanded = document.getElementById('view-controls-expanded');
-            const collapsed = document.getElementById('view-collapsed-btn');
-            expanded.classList.toggle('open');
-            collapsed.innerText = expanded.classList.contains('open') ? 'âœ•' : 'ðŸ“·';
-        }
-
-        function setCameraViewMobile(presetKey, btnElement) {
-            document.querySelectorAll('#view-controls-expanded .btn-view').forEach(b => b.classList.remove('active'));
-            if (btnElement) btnElement.classList.add('active');
-            const p = cameraPresets[presetKey];
-            if (!p) return;
-            gsap.to(camera.position, { x: p.pos[0], y: p.pos[1], z: p.pos[2], duration: 1.2, ease: 'power2.inOut' });
-            gsap.to(controls.target, { x: p.target[0], y: p.target[1], z: p.target[2], duration: 1.2, ease: 'power2.inOut', onUpdate: () => controls.update() });
-            const showOverlay = document.getElementById('show-overlay');
-            if (showOverlay) showOverlay.classList.toggle('active', presetKey === 'show');
-            setTimeout(() => {
-                document.getElementById('view-controls-expanded').classList.remove('open');
-                document.getElementById('view-collapsed-btn').innerText = 'ðŸ“·';
-            }, 300);
+            if(intersects.length>0){ const sd=intersects[0].object.userData;
+                if(sd&&sd.tier){ if(currentHoveredTier!==sd.tier.id){ if(currentHoveredTier) seatsByTier[currentHoveredTier].forEach(s=>{s.cushionMesh.material.color.setHex(s.tier.color);s.backrestMesh.material.color.setHex(s.tier.color);}); currentHoveredTier=sd.tier.id; seatsByTier[currentHoveredTier].forEach(s=>{s.cushionMesh.material.color.setHex(0xffffff);s.backrestMesh.material.color.setHex(0xffffff);}); }
+                document.getElementById('tt-tier').innerText=sd.tier.name+' ('+sd.tier.price.toLocaleString('vi-VN')+' đ)'; document.getElementById('tt-tier').style.color=sd.tier.hex; document.getElementById('tt-sub').innerText='Còn '+(tierStats[sd.tier.id]?.available ?? '—')+' ghế trống · Click để chọn vé'; tooltip.style.display='block'; document.body.style.cursor='pointer'; return; } }
+            if(currentHoveredTier){ seatsByTier[currentHoveredTier].forEach(s=>{s.cushionMesh.material.color.setHex(s.tier.color);s.backrestMesh.material.color.setHex(s.tier.color);}); currentHoveredTier=null; tooltip.style.display='none'; document.body.style.cursor='default'; }
         }
 
         const cameraPresets = { overview:{pos:[0,38,52],target:[0,2,5]}, show:{pos:[0,7.2,-11.8],target:[0,6.2,-21.8]}, stage:{pos:[0,6,-18],target:[0,8,12]}, vip:{pos:[0,14,18],target:[0,2,-12]}, top:{pos:[0,65,2],target:[0,0,0]} };
