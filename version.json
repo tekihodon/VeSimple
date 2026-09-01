@@ -1,10 +1,11 @@
 {
   "name": "VeSimple",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "VeSimple - Hệ thống bán vé liveshow 9 Giờ Kém 15 (Flask + PostgreSQL + Three.js)",
   "docker_image": "tekihodon/vesimple",
-  "released_at": "2026-09-01",
+  "released_at": "2026-09-02",
   "changelog": [
+    "1.4.0: Cập nhật agenda từ Agenda.md — 3 section (Pre-Show 60p, Main Show 95p, Post-Show 25p). Thêm trường totalDuration vào event config.",
     "1.3.0: Desktop banner — dùng banner_ngang.png cho desktop (≥769px), banner.jpg cho mobile. Tăng kích thước banner overlay (max-width 1500px, max-height 78vh). QR code dùng template compact. Ẩn scrollbar trên show-card desktop.",
     "1.2.0: Mobile UI — touch interaction cải thiện (drag threshold), collapsible view controls, giỏ hàng nút tròn, legend card swipe-up với bounce animation, info panel hamburger button.",
     "1.1.0: Admin — phân lại ghế đã phân (un-pick + đổi), sửa đơn dạng giỏ hàng (tự thu hồi ghế), bộ lọc trạng thái multi-checkbox với default ẩn đơn huỷ, thêm cột thời gian đặt, sắp xếp mới nhất trước, panel thống kê mới (doanh thu + bán vé theo hạng + chart doanh thu theo ngày với date range). Customer — nút Show âm nhạc render từ config.show (banner + timeline).",
