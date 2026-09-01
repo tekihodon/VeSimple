@@ -1,17 +1,47 @@
+name: ecstatic_chiahui
 services:
   veapp:
-    image: tekihodon/vesimple:1.2.0
+    cpu_shares: 90
+    command: []
     container_name: veapp
-    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+    hostname: veapp
+    image: tekihodon/vesimple:1.2.0
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    labels:
+      icon: https://icon.casaos.io/main/all/veapp.png
     ports:
-      - "${VESIMPLE_PORT:-3333}:3333"
+      - target: 3333
+        published: "3333"
+        protocol: tcp
+    restart: unless-stopped
     volumes:
-      # Mount config.json thật vào container (chứa DB connection string cố định tới Supabase)
-      # Nếu thiếu file này trên host, Docker sẽ tạo MỘT THƯ MỤC tên config.json
-      # → app crash. Phải tạo file config.json trên host TRƯỚC khi `docker compose up`.
-      - ./config.json:/app/config.json:ro
-      # Lưu QR sinh ra ngoài container (cache VietQR). Thư mục static/qr phải tồn tại trên host.
-      - ./static/qr:/app/static/qr
+      - type: bind
+        source: /DATA/AppData/veapp/app/config.json
+        target: /app/config.json
+      - type: bind
+        source: /tmp/casaos-compose-app-432994938/static/qr
+        target: /app/static/qr
+    devices: []
+    cap_add: []
+    environment: []
+    network_mode: bridge
+    privileged: false
+x-casaos:
+  author: self
+  category: self
+  hostname: 8keyslive.store
+  icon: https://icon.casaos.io/main/all/veapp.png
+  index: /
+  is_uncontrolled: false
+  port_map: "443"
+  scheme: https
+  store_app_id: ecstatic_chiahui
+  title:
+    custom: ""
+    en_us: veapp
