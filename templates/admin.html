@@ -191,7 +191,10 @@
                             <div id="sel-tier-progress" style="display:flex;flex-direction:column;gap:6px;margin-top:10px;"></div>
                             <div class="selected-seats" id="sel-seats-list"></div>
                         </div>
-                        <button class="btn-save-assign" id="btn-save-assign" onclick="saveSeatAssignment()">✓ Lưu phân ghế</button>
+                        <div style="display:flex;gap:10px;margin-top:16px;">
+                            <button class="btn-save-assign" id="btn-save-assign" onclick="saveSeatAssignment()" style="flex:1;margin-top:0;">✓ Lưu phân ghế</button>
+                            <button class="btn-save-assign" onclick="clearSeatSelection()" style="flex:1;margin-top:0;background:linear-gradient(135deg,#64748b,#475569);">🗑 Làm sạch</button>
+                        </div>
                     </div>
                     <div style="margin-top:20px;">
                         <h4 style="font-size:13px;color:#94a3b8;margin-bottom:12px;">Đơn hàng đã thanh toán (chờ phân ghế):</h4>
@@ -788,6 +791,15 @@
             document.getElementById('sel-picked-count').innerText = selectedSeats.length + '/' + requiredSeats;
             document.getElementById('btn-save-assign').disabled = !isSelectionValid();
             renderTierProgress();
+        }
+
+        function clearSeatSelection() {
+            if (selectedSeats.length === 0) { showToast('Chưa chọn ghế nào'); return; }
+            if (!confirm('Bỏ chọn toàn bộ ghế đang chọn?')) return;
+            selectedSeats = [];
+            updateSelectedSeatsDisplay();
+            applySeatShading();
+            showToast('Đã làm sạch ghế đang chọn');
         }
 
         async function saveSeatAssignment() {
