@@ -281,8 +281,8 @@ def admin_send_ticket(order_id):
     order = get_order(order_id=order_id)
     if not order:
         return jsonify({'error': 'Order not found'}), 404
-    if order['status'] != 'paid':
-        return jsonify({'error': 'Chỉ gửi vé khi đơn đã thanh toán'}), 400
+    if order['status'] != 'assigned':
+        return jsonify({'error': 'Chỉ gửi vé khi đã phân ghế xong'}), 400
     seats = get_order_seats_with_tiers(order_id)
     result = send_ticket_email(order, seats, config)
     if result.get('ok'):

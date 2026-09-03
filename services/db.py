@@ -87,6 +87,18 @@ def init_schema():
     try:
         cur.execute(schema_sql)
         conn.commit()
+        cur.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = '9hkem15_orders' AND column_name = 'email_sent_at'
+                ) THEN
+                    ALTER TABLE "9hkem15_orders" ADD COLUMN email_sent_at TIMESTAMPTZ;
+                END IF;
+            END $$;
+        """)
+        conn.commit()
     finally:
         cur.close()
         close_conn(conn)
