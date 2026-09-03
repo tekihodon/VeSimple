@@ -805,8 +805,9 @@
                 requiredSeats = 0;
                 requiredByTier = {};
                 document.getElementById('selected-order-info').style.display = 'none';
-                loadOrders();
-                loadSeatStatus();
+                await loadOrders();
+                await loadSeatStatus();
+                applySeatShading();
             } catch (e) { showToast('Lỗi lưu phân ghế'); }
         }
 

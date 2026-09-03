@@ -1,10 +1,11 @@
 {
   "name": "VeSimple",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "VeSimple - Hệ thống bán vé liveshow 9 Giờ Kém 15 (Flask + PostgreSQL + Three.js)",
   "docker_image": "tekihodon/vesimple",
   "released_at": "2026-09-03",
   "changelog": [
+    "1.7.5: Fix bug phan lai ghe - applySeatShading() goi sau loadSeatStatus() de shading dung mau.",
     "1.7.4: Cột Ghế không truncate (word-break), cột Mail hiện mã ghế đã gửi kèm thời gian, thêm email_sent_seats column.",
     "1.7.3: Them cot Ghe (ma ghe da phan) va Mail (thoi gian gui cuoi) trong bang don hang admin.",
     "1.7.2: Chong luong status dung — pending->paid->assigned; Hoan TT ve pending + release ghe; Gui mail khi assigned.",
