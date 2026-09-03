@@ -792,10 +792,12 @@
 
         async function saveSeatAssignment() {
             if (!isSelectionValid()) { showToast('Chổi hợp lệ ghế: cần đúng hạng & đủ số lượng'); return; }
+            const seatsToSave = [...selectedSeats];
+            const orderId = selectedOrder.id;
             try {
-                const resp = await fetch(`/admin/api/orders/${selectedOrder.id}/assign`, {
+                const resp = await fetch(`/admin/api/orders/${orderId}/assign`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ seats: selectedSeats })
+                    body: JSON.stringify({ seats: seatsToSave })
                 });
                 const result = await resp.json();
                 if (!result.ok) { showToast(result.error || 'Lỗi lưu phân ghế'); return; }
@@ -807,7 +809,18 @@
                 document.getElementById('selected-order-info').style.display = 'none';
                 await loadOrders();
                 await loadSeatStatus();
-                applySeatShading();
+                seatsToSave.forEach(code => {
+                    const sd = seatByCode[code];
+                    if (sd) sd.mat.color.setHex(0x64748b);
+                });
+                Object.entries(seatByCode).forEach(([code, sd]) => {
+                    if (!seatsToSave.includes(code)) {
+                        const seat = seatStatus[code];
+                        if (seat && seat.status === 'assigned') {
+                            sd.mat.color.setHex(0x64748b);
+                        }
+                    }
+                });
             } catch (e) { showToast('Lỗi lưu phân ghế'); }
         }
 
