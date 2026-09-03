@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS "9hkem15_orders" (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     paid_at     TIMESTAMPTZ,
     assigned_at TIMESTAMPTZ,
-    email_sent_at TIMESTAMPTZ
+    email_sent_at TIMESTAMPTZ,
+    email_sent_seats TEXT
 );
 
 CREATE INDEX IF NOT EXISTS "9hkem15_orders_status_idx" ON "9hkem15_orders"(status);

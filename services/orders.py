@@ -139,11 +139,12 @@ def unpay_order(order_id):
     """, (order_id,))
     return get_order(order_id)
 
-def mark_email_sent(order_id):
+def mark_email_sent(order_id, seat_codes=None):
     now = datetime.utcnow()
+    seats_str = ', '.join(seat_codes) if seat_codes else None
     execute("""
-        UPDATE "9hkem15_orders" SET email_sent_at = %s WHERE id = %s
-    """, (now, order_id))
+        UPDATE "9hkem15_orders" SET email_sent_at = %s, email_sent_seats = %s WHERE id = %s
+    """, (now, seats_str, order_id))
 
 def cancel_order(order_id):
     update_order_status(order_id, 'cancelled')

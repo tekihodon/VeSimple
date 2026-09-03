@@ -142,7 +142,8 @@ def send_ticket_email(order, seats, config):
         })
         if resp and resp.get('id'):
             from services.orders import mark_email_sent
-            mark_email_sent(order['id'])
+            seat_codes = [s['code'] for s in seats]
+            mark_email_sent(order['id'], seat_codes)
             return {'ok': True, 'email_id': resp['id']}
         return {'ok': False, 'error': 'No email ID returned'}
     except Exception as e:

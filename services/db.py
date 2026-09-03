@@ -96,6 +96,12 @@ def init_schema():
                 ) THEN
                     ALTER TABLE "9hkem15_orders" ADD COLUMN email_sent_at TIMESTAMPTZ;
                 END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = '9hkem15_orders' AND column_name = 'email_sent_seats'
+                ) THEN
+                    ALTER TABLE "9hkem15_orders" ADD COLUMN email_sent_seats TEXT;
+                END IF;
             END $$;
         """)
         conn.commit()
