@@ -1,10 +1,11 @@
 {
   "name": "VeSimple",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "VeSimple - Hệ thống bán vé liveshow 9 Giờ Kém 15 (Flask + PostgreSQL + Three.js)",
   "docker_image": "tekihodon/vesimple",
   "released_at": "2026-09-03",
   "changelog": [
+    "1.7.2: Chốt luồng status đúng — pending→paid→assigned; Hoàn TT về pending_payment + release ghế; Gửi mail khi assigned.",
     "1.7.1: Fix bug — nút Gửi mail chỉ hiện khi assigned (đã phân ghế), fix init_schema() an toàn khi column đã tồn tại, cập nhật config.example.json resend.from.",
     "1.7.0: Email ticket qua Resend — nút Đã TT (chuyển assigned→paid), Hoàn TT (về pending_payment + release ghế), Gửi mail (HTML ticket với thông tin ghế, vé). Dùng Resend Python SDK thay vì MCP.",
     "1.6.0: Fix Vietnamese encoding — base v1.2.0 (mobile improvements) + v1.3.0 CSS/banner changes (all valid fixes preserved, no corruption).",

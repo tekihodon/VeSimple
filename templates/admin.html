@@ -426,9 +426,9 @@
                     <td>
                         <button class="btn-action btn-approve" onclick="showOrderDetail(${o.id})">Chi tiết</button>
                         ${o.status === 'pending_payment' ? `<button class="btn-action btn-approve" onclick="markPaid(${o.id})">Duyệt TT</button>` : ''}
-                        ${o.status === 'paid' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân ghế</button>` : ''}
-                        ${o.status === 'assigned' ? `<button class="btn-action btn-paid" onclick="markPaidConfirmed(${o.id})">Đã TT</button>` : ''}
+                        ${o.status === 'paid' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">${(o.seats && o.seats.length) ? 'Phân lại' : 'Phân ghế'}</button>` : ''}
                         ${o.status === 'paid' ? `<button class="btn-action btn-unpay" onclick="unpayOrder(${o.id})">Hoàn TT</button>` : ''}
+                        ${o.status === 'assigned' ? `<button class="btn-action btn-paid" onclick="markPaidConfirmed(${o.id})">Đã TT</button>` : ''}
                         ${o.status === 'assigned' ? `<button class="btn-action btn-email" onclick="sendTicketEmail(${o.id})">Gửi mail</button>` : ''}
                         ${o.status === 'assigned' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân lại</button>` : ''}
                         ${o.status === 'assigned' ? `<button class="btn-action btn-cancel" onclick="cancelOrder(${o.id})">Hủy</button>` : ''}
@@ -504,9 +504,9 @@
                 <div class="detail-row" style="margin-top:8px;border-top:2px solid rgba(255,255,255,0.1);padding-top:12px;"><span class="label">TỔNG CỘNG</span><span class="value" style="color:#10b981;font-size:16px;">${(o.total || 0).toLocaleString('vi-VN')} đ</span></div>`;
             let actions = '';
             if (o.status === 'pending_payment') actions += '<button class="btn-action btn-approve" onclick="markPaid(' + id + ')">✓ Duyệt thanh toán</button>';
-            if (o.status === 'paid') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">📍 Phân ghế</button>';
-            if (o.status === 'assigned') actions += '<button class="btn-action btn-paid" onclick="markPaidConfirmed(' + id + ');closeModal();">✓ Đã TT</button>';
+            if (o.status === 'paid') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">📍 ' + ((o.seats && o.seats.length) ? 'Phân lại ghế' : 'Phân ghế') + '</button>';
             if (o.status === 'paid') actions += '<button class="btn-action btn-unpay" onclick="unpayOrder(' + id + ');closeModal();">↩ Hoàn TT</button>';
+            if (o.status === 'assigned') actions += '<button class="btn-action btn-paid" onclick="markPaidConfirmed(' + id + ');closeModal();">✓ Đã TT</button>';
             if (o.status === 'assigned') actions += '<button class="btn-action btn-email" onclick="sendTicketEmail(' + id + ');closeModal();">📧 Gửi mail</button>';
             if (o.status === 'assigned') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">🔁 Phân lại ghế</button>';
             if (o.status !== 'cancelled') actions += '<button class="btn-action btn-cancel" onclick="cancelOrder(' + id + ')">✕ Hủy đơn</button>';
