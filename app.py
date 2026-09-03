@@ -213,7 +213,7 @@ def admin_assign_seats(order_id):
             items = json.loads(items)
         except (ValueError, TypeError):
             items = []
-    validation = validate_seats_for_items(seat_codes, items)
+    validation = validate_seats_for_items(seat_codes, items, current_order_id=order_id)
     if not validation.get('ok'):
         return jsonify(validation), 400
     if order['status'] == 'assigned':

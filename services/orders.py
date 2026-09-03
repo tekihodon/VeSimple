@@ -74,7 +74,7 @@ def _release_order_seats(order_id):
     if seats:
         release_seats([s['code'] for s in seats])
 
-def validate_seats_for_items(seat_codes, items):
+def validate_seats_for_items(seat_codes, items, current_order_id=None):
     if isinstance(items, str):
         try:
             items = json.loads(items)
@@ -92,7 +92,7 @@ def validate_seats_for_items(seat_codes, items):
     expected_total = sum(required.values())
     if len(seat_codes) != expected_total:
         return {'ok': False, 'error': f'Đơn cần đúng {expected_total} ghế (hiện chọn {len(seat_codes)})'}
-    seats = query('SELECT code, tier_id, status FROM "9hkem15_seats" WHERE code = ANY(%s)', (list(seat_codes),))
+    seats = query('SELECT code, tier_id, status, order_id FROM "9hkem15_seats" WHERE code = ANY(%s)', (list(seat_codes),))
     found = {s['code']: s for s in seats}
     missing = [c for c in seat_codes if c not in found]
     if missing:
@@ -100,9 +100,8 @@ def validate_seats_for_items(seat_codes, items):
     counts = {}
     for c in seat_codes:
         s = found[c]
-        if s['status'] == 'assigned':
-            counts_by_tier = query('SELECT order_id FROM "9hkem15_seats" WHERE code = %s', (c,), one=True)
-            if not counts_by_tier or counts_by_tier.get('order_id') != getattr(validate_seats_for_items, '_current_order_id', None):
+        if s['status'] == 'assigned' and s.get('order_id') is not None:
+            if current_order_id is None or int(s['order_id']) != int(current_order_id):
                 return {'ok': False, 'error': f'Ghế {c} đã được phân cho đơn khác'}
         counts[s['tier_id']] = counts.get(s['tier_id'], 0) + 1
     for t, q in required.items():
