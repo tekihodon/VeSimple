@@ -126,7 +126,7 @@ def send_ticket_email(order, seats, config, kind='new', old_seats=None):
     kind: 'new' (first send), 'reassign' (seats changed after first email)
     """
     api_key = config.get('resend', {}).get('apiKey')
-    from_email = config.get('resend', {}).get('from', '9 GIO KEM 15 <onboarding@resend.dev>')
+    from_email = config.get('resend', {}).get('from', 'BTC 9hkem15 <admin@8keyslive.store>')
     ev = _event(config)
 
     items = order.get('items', [])
@@ -205,7 +205,7 @@ def send_cancel_email(order, config, seats=None):
     Email thông báo vé bị huỷ
     """
     api_key = config.get('resend', {}).get('apiKey')
-    from_email = config.get('resend', {}).get('from', '9 GIO KEM 15 <onboarding@resend.dev>')
+    from_email = config.get('resend', {}).get('from', 'BTC 9hkem15 <admin@8keyslive.store>')
     ev = _event(config)
     ev['_code'] = order['code']
     ev['_name'] = order['full_name']
