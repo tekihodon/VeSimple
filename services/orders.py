@@ -22,6 +22,15 @@ def get_order(order_id=None, code=None):
         return query("SELECT * FROM \"9hkem15_orders\" WHERE code = %s", (code,), one=True)
     return None
 
+def get_order_seats_with_tiers(order_id):
+    return query("""
+        SELECT s.code, s.row_id, t.id as tier_id, t.name as tier_name, t.price, t.color
+        FROM "9hkem15_seats" s
+        JOIN "9hkem15_tiers" t ON s.tier_id = t.id
+        WHERE s.order_id = %s
+        ORDER BY t.sort_order, s.row_id, s.code
+    """, (order_id,))
+
 def get_pending_orders():
     return query("""
         SELECT o.*,
@@ -117,6 +126,24 @@ def reassign_seats_to_order(order_id, seat_codes):
 def mark_paid(order_id):
     update_order_status(order_id, 'paid')
     return get_order(order_id)
+
+def unpay_order(order_id):
+    order = get_order(order_id)
+    if not order:
+        return None
+    _release_order_seats(order_id)
+    execute("""
+        UPDATE "9hkem15_orders"
+        SET status = 'pending_payment', paid_at = NULL, assigned_at = NULL
+        WHERE id = %s
+    """, (order_id,))
+    return get_order(order_id)
+
+def mark_email_sent(order_id):
+    now = datetime.utcnow()
+    execute("""
+        UPDATE "9hkem15_orders" SET email_sent_at = %s WHERE id = %s
+    """, (now, order_id))
 
 def cancel_order(order_id):
     update_order_status(order_id, 'cancelled')

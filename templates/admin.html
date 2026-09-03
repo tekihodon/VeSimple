@@ -38,6 +38,10 @@
         .status-paid { background: rgba(16,185,129,0.2); color: #10b981; }
         .status-assigned { background: rgba(59,130,246,0.2); color: #3b82f6; }
         .status-cancelled { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .status-paid_confirm { background: rgba(168,85,247,0.2); color: #a855f7; }
+        .btn-paid { background: #a855f7; color: #fff; }
+        .btn-unpay { background: #f59e0b; color: #0f172a; }
+        .btn-email { background: #6366f1; color: #fff; }
         .btn-action { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; margin-right: 4px; }
         .btn-approve { background: #10b981; color: #fff; }
         .btn-assign { background: #3b82f6; color: #fff; }
@@ -79,6 +83,23 @@
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 13px; font-weight: 600; z-index: 2000; transition: transform 0.3s; }
         .toast.show { transform: translateX(-50%) translateY(0); }
         @media (max-width: 1024px) { .admin-layout { flex-direction: column; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); } .tier-stats { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .sidebar { padding: 12px; }
+            .sidebar h1 { font-size: 14px; }
+            .sidebar .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .sidebar .stat-card .value { font-size: 20px; }
+            .main-content { padding: 12px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .panel > div:first-child { gap: 8px; }
+            .orders-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .orders-table { min-width: 700px; font-size: 12px; }
+            .orders-table th, .orders-table td { padding: 8px 10px; }
+            .panel-stats .stats-cards-row { grid-template-columns: 1fr !important; gap: 10px; }
+            .tier-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            #overview-chart-container { height: 50vh; }
+            #chart-container { height: 50vh; }
+            #panel-stats .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
     </style>
 </head>
 <body>
@@ -135,10 +156,12 @@
                     <button id="btn-bulk-delete" onclick="bulkDeleteSelected()" disabled style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:12px;opacity:0.5;">🗑 Xóa đã chọn (0)</button>
                     <span id="filter-count" style="font-size:12px;color:#94a3b8;margin-left:auto;align-self:center;"></span>
                 </div>
-                <table class="orders-table">
-                    <thead><tr><th style="width:36px;"><input type="checkbox" id="select-all-orders" onchange="toggleSelectAll(this.checked)"></th><th>Mã ĐH</th><th>Khách hàng</th><th>SL</th><th>Tổng tiền</th><th>Thời gian đặt</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-                    <tbody id="orders-tbody"></tbody>
-                </table>
+                <div class="orders-table-wrapper">
+                    <table class="orders-table">
+                        <thead><tr><th style="width:36px;"><input type="checkbox" id="select-all-orders" onchange="toggleSelectAll(this.checked)"></th><th>Mã ĐH</th><th>Khách hàng</th><th>SL</th><th>Tổng tiền</th><th>Thời gian đặt</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                        <tbody id="orders-tbody"></tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="panel" id="panel-overview">
@@ -186,7 +209,7 @@
                     <button onclick="setStatsAll()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;">Tất cả</button>
                     <span id="stats-range-label" style="font-size:12px;color:#94a3b8;margin-left:auto;"></span>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;" class="stats-cards-row">
                     <div style="background:linear-gradient(135deg,#10b981,#059669);border-radius:16px;padding:20px;">
                         <div style="font-size:11px;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:1px;">Doanh thu</div>
                         <div id="stat-total-revenue" style="font-size:26px;font-weight:800;color:#fff;margin-top:6px;">0 đ</div>
@@ -201,8 +224,8 @@
                     </div>
                 </div>
                 <h3 style="font-size:14px;margin-bottom:12px;color:#cbd5e1;text-transform:uppercase;letter-spacing:1px;">📦 Bán vé theo hạng</h3>
-                <div style="background:rgba(15,23,42,0.8);border-radius:12px;padding:16px;margin-bottom:24px;overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <div class="table-scroll" style="background:rgba(15,23,42,0.8);border-radius:12px;padding:16px;margin-bottom:24px;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:400px;">
                         <thead><tr style="text-align:left;color:#94a3b8;font-size:11px;text-transform:uppercase;"><th style="padding:8px 0;">Hạng vé</th><th style="padding:8px 0;text-align:right;">Đơn giá</th><th style="padding:8px 0;text-align:right;">Số vé bán</th><th style="padding:8px 0;text-align:right;">Doanh thu</th><th style="padding:8px 0;text-align:right;">Tỷ trọng</th></tr></thead>
                         <tbody id="stats-tier-tbody"></tbody>
                     </table>
@@ -404,6 +427,9 @@
                         <button class="btn-action btn-approve" onclick="showOrderDetail(${o.id})">Chi tiết</button>
                         ${o.status === 'pending_payment' ? `<button class="btn-action btn-approve" onclick="markPaid(${o.id})">Duyệt TT</button>` : ''}
                         ${o.status === 'paid' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân ghế</button>` : ''}
+                        ${o.status === 'assigned' ? `<button class="btn-action btn-paid" onclick="markPaidConfirmed(${o.id})">Đã TT</button>` : ''}
+                        ${o.status === 'paid' ? `<button class="btn-action btn-unpay" onclick="unpayOrder(${o.id})">Hoàn TT</button>` : ''}
+                        ${o.status === 'paid' ? `<button class="btn-action btn-email" onclick="sendTicketEmail(${o.id})">Gửi mail</button>` : ''}
                         ${o.status === 'assigned' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân lại</button>` : ''}
                         ${o.status === 'assigned' ? `<button class="btn-action btn-cancel" onclick="cancelOrder(${o.id})">Hủy</button>` : ''}
                         ${o.status === 'cancelled' ? `<button class="btn-action btn-approve" onclick="restoreOrder(${o.id})">Khôi phục</button>` : ''}
@@ -479,6 +505,9 @@
             let actions = '';
             if (o.status === 'pending_payment') actions += '<button class="btn-action btn-approve" onclick="markPaid(' + id + ')">✓ Duyệt thanh toán</button>';
             if (o.status === 'paid') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">📍 Phân ghế</button>';
+            if (o.status === 'assigned') actions += '<button class="btn-action btn-paid" onclick="markPaidConfirmed(' + id + ');closeModal();">✓ Đã TT</button>';
+            if (o.status === 'paid') actions += '<button class="btn-action btn-unpay" onclick="unpayOrder(' + id + ');closeModal();">↩ Hoàn TT</button>';
+            if (o.status === 'paid') actions += '<button class="btn-action btn-email" onclick="sendTicketEmail(' + id + ');closeModal();">📧 Gửi mail</button>';
             if (o.status === 'assigned') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">🔁 Phân lại ghế</button>';
             if (o.status !== 'cancelled') actions += '<button class="btn-action btn-cancel" onclick="cancelOrder(' + id + ')">✕ Hủy đơn</button>';
             if (o.status === 'cancelled') actions += '<button class="btn-action btn-approve" onclick="restoreOrder(' + id + ')">↺ Khôi phục</button>';
@@ -496,6 +525,37 @@
                 loadOrders();
                 closeModal();
             } catch (e) { showToast('Lỗi'); }
+        }
+
+        async function markPaidConfirmed(id) {
+            try {
+                const resp = await fetch(`/admin/api/orders/${id}/mark-paid`, { method: 'POST' });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi'); return; }
+                showToast('Đã xác nhận thanh toán');
+                loadOrders();
+            } catch (e) { showToast('Lỗi kết nối'); }
+        }
+
+        async function unpayOrder(id) {
+            if (!confirm('Hoàn đơn về trạng thái chờ thanh toán?')) return;
+            try {
+                const resp = await fetch(`/admin/api/orders/${id}/unpay`, { method: 'POST' });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi'); return; }
+                showToast('Đã hoàn thanh toán về Chờ TT');
+                loadOrders();
+            } catch (e) { showToast('Lỗi kết nối'); }
+        }
+
+        async function sendTicketEmail(id) {
+            try {
+                const resp = await fetch(`/admin/api/orders/${id}/send-ticket`, { method: 'POST' });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi gửi mail'); return; }
+                showToast('Đã gửi vé qua email');
+                loadOrders();
+            } catch (e) { showToast('Lỗi kết nối'); }
         }
 
         async function cancelOrder(id) {

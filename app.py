@@ -9,7 +9,7 @@ from services.orders import (
     create_order, get_order, get_pending_orders, get_all_orders,
     assign_seats_to_order, reassign_seats_to_order, mark_paid, cancel_order,
     restore_order, edit_order, delete_orders, validate_seats_for_items,
-    get_stats
+    get_stats, unpay_order, get_order_seats_with_tiers
 )
 from services.vietqr import get_or_generate_qr, get_vietqr_url
 from services.auth import login_admin, logout_admin, admin_required, check_admin_auth
@@ -265,6 +265,29 @@ def admin_mark_paid(order_id):
     if not order:
         return jsonify({'error': 'Order not found'}), 404
     return jsonify({'ok': True, 'status': order['status']})
+
+@app.route('/admin/api/orders/<int:order_id>/unpay', methods=['POST'])
+@admin_required
+def admin_unpay_order(order_id):
+    order = unpay_order(order_id)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    return jsonify({'ok': True, 'status': order['status']})
+
+@app.route('/admin/api/orders/<int:order_id>/send-ticket', methods=['POST'])
+@admin_required
+def admin_send_ticket(order_id):
+    from services.email_service import send_ticket_email
+    order = get_order(order_id=order_id)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    if order['status'] != 'paid':
+        return jsonify({'error': 'Chỉ gửi vé khi đơn đã thanh toán'}), 400
+    seats = get_order_seats_with_tiers(order_id)
+    result = send_ticket_email(order, seats, config)
+    if result.get('ok'):
+        return jsonify({'ok': True})
+    return jsonify({'ok': False, 'error': result.get('error', 'Lỗi gửi email')}), 500
 
 @app.route('/admin/api/orders/delete', methods=['POST'])
 @admin_required

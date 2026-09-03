@@ -118,9 +118,9 @@
         .btn-checkout-submit { width: 100%; background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; }
         .btn-back-to-chart { width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; padding: 12px; border-radius: 10px; font-size: 13px; cursor: pointer; margin-top: 8px; }
 
-        .payment-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .payment-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: none; align-items: flex-start; justify-content: center; padding: 16px; overflow-y: auto; }
         .payment-overlay.active { display: flex; }
-        .payment-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 32px; max-width: 480px; width: 90%; text-align: center; }
+        .payment-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 32px; max-width: 480px; width: 100%; text-align: center; margin: auto; flex-shrink: 0; max-height: 90vh; overflow-y: auto; }
         .payment-card h2 { font-size: 22px; margin-bottom: 4px; }
         .payment-card .sub { color: #94a3b8; font-size: 14px; margin-bottom: 16px; }
         .payment-code { font-size: 24px; font-weight: 800; color: #f59e0b; margin: 16px 0; }
@@ -164,6 +164,13 @@
             .info-panel { width: 100vw; }
             .show-overlay img { max-width: 80vw; max-height: 52vh; border-radius: 12px; }
             #seat-tooltip { font-size: 11px; padding: 6px 10px; }
+            .payment-card { padding: 20px 16px; border-radius: 16px; }
+            .payment-card h2 { font-size: 18px; }
+            .payment-qr { padding: 12px; }
+            .payment-qr img { max-width: 180px; }
+            .bank-box { padding: 12px; }
+            .btn-pay-confirm { padding: 12px; font-size: 14px; }
+            .btn-pay-back { padding: 10px; }
         }
         @media (min-width: 769px) { .mobile-cart-btn { display: none; } .legend-toggle-bar { pointer-events: none; } .view-collapsed-btn { display: none; } .view-controls-expanded { display: none !important; } }
     </style>

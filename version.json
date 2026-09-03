@@ -1,10 +1,11 @@
 {
   "name": "VeSimple",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "VeSimple - Hệ thống bán vé liveshow 9 Giờ Kém 15 (Flask + PostgreSQL + Three.js)",
   "docker_image": "tekihodon/vesimple",
-  "released_at": "2026-09-02",
+  "released_at": "2026-09-03",
   "changelog": [
+    "1.7.0: Email ticket qua Resend — nút Đã TT (chuyển assigned→paid), Hoàn TT (về pending_payment + release ghế), Gửi mail (HTML ticket với thông tin ghế, vé). Dùng Resend Python SDK thay vì MCP.",
     "1.6.0: Fix Vietnamese encoding — base v1.2.0 (mobile improvements) + v1.3.0 CSS/banner changes (all valid fixes preserved, no corruption).",
     "1.4.0: Cập nhật agenda từ Agenda.md — 3 section (Pre-Show 60p, Main Show 95p, Post-Show 25p). Thêm trường totalDuration vào event config.",
     "1.3.0: Desktop banner — dùng banner_ngang.png cho desktop (≥769px), banner.jpg cho mobile. Tăng kích thước banner overlay (max-width 1500px, max-height 78vh). QR code dùng template compact. Ẩn scrollbar trên show-card desktop.",
