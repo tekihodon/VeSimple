@@ -1,10 +1,11 @@
 {
   "name": "VeSimple",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "description": "VeSimple - Hệ thống bán vé liveshow 9 Giờ Kém 15 (Flask + PostgreSQL + Three.js)",
   "docker_image": "tekihodon/vesimple",
   "released_at": "2026-09-03",
   "changelog": [
+    "1.7.9: Email design: phan biet 3 loai (new/reassign/cancel), tuong phan cao, font to, them support info (hotline/email/supportName), them button Gui mail huy cho don cancelled.",
     "1.7.8: Fix bug phan lai ghe - validate_seats_for_items khong truyen order_id nen ghe cu bi loi da phan cho don khac.",
     "1.7.7: Them nut Lam sach (Clear) trong panel Phan ghe de bo chon tat ca ghe dang chon.",
     "1.7.6: Fix bug phan lai ghe - luu selectedSeats vao bien local, re-color ghe assigned sau loadSeatStatus().",

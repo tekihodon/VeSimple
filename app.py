@@ -284,7 +284,33 @@ def admin_send_ticket(order_id):
     if order['status'] != 'assigned':
         return jsonify({'error': 'Chỉ gửi vé khi đã phân ghế xong'}), 400
     seats = get_order_seats_with_tiers(order_id)
-    result = send_ticket_email(order, seats, config)
+    current_codes = sorted([s['code'] for s in seats])
+    old_codes = sorted([c.strip() for c in (order.get('email_sent_seats') or '').split(',') if c.strip()])
+    is_reassign = bool(order.get('email_sent_at')) and current_codes != old_codes
+    if is_reassign:
+        old_seats = [{'code': c} for c in old_codes]
+        result = send_ticket_email(order, seats, config, kind='reassign', old_seats=old_seats)
+    else:
+        result = send_ticket_email(order, seats, config, kind='new')
+    if result.get('ok'):
+        return jsonify({'ok': True, 'kind': 'reassign' if is_reassign else 'new'})
+    return jsonify({'ok': False, 'error': result.get('error', 'Lỗi gửi email')}), 500
+
+@app.route('/admin/api/orders/<int:order_id>/send-cancel-email', methods=['POST'])
+@admin_required
+def admin_send_cancel_email(order_id):
+    from services.email_service import send_cancel_email
+    order = get_order(order_id=order_id)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    if order['status'] != 'cancelled':
+        return jsonify({'error': 'Chỉ gửi mail huỷ khi đơn đã huỷ'}), 400
+    seats = None
+    try:
+        seats = get_order_seats_with_tiers(order_id)
+    except Exception:
+        seats = None
+    result = send_cancel_email(order, config, seats=seats)
     if result.get('ok'):
         return jsonify({'ok': True})
     return jsonify({'ok': False, 'error': result.get('error', 'Lỗi gửi email')}), 500

@@ -439,6 +439,7 @@
                         ${o.status === 'assigned' ? `<button class="btn-action btn-email" onclick="sendTicketEmail(${o.id})">Gửi mail</button>` : ''}
                         ${o.status === 'assigned' ? `<button class="btn-action btn-assign" onclick="selectForAssign(${o.id})">Phân lại</button>` : ''}
                         ${o.status === 'assigned' ? `<button class="btn-action btn-cancel" onclick="cancelOrder(${o.id})">Hủy</button>` : ''}
+                        ${o.status === 'cancelled' ? `<button class="btn-action btn-email" onclick="sendCancelEmail(${o.id})">Gửi mail huỷ</button>` : ''}
                         ${o.status === 'cancelled' ? `<button class="btn-action btn-approve" onclick="restoreOrder(${o.id})">Khôi phục</button>` : ''}
                         ${o.status !== 'cancelled' ? `<button class="btn-action btn-assign" onclick="openEditOrder(${o.id})">Sửa</button>` : ''}
                         <button class="btn-action btn-cancel" onclick="deleteOneOrder(${o.id})">🗑</button>
@@ -517,6 +518,7 @@
             if (o.status === 'assigned') actions += '<button class="btn-action btn-email" onclick="sendTicketEmail(' + id + ');closeModal();">📧 Gửi mail</button>';
             if (o.status === 'assigned') actions += '<button class="btn-action btn-assign" onclick="selectForAssign(' + id + ');closeModal();">🔁 Phân lại ghế</button>';
             if (o.status !== 'cancelled') actions += '<button class="btn-action btn-cancel" onclick="cancelOrder(' + id + ')">✕ Hủy đơn</button>';
+            if (o.status === 'cancelled') actions += '<button class="btn-action btn-email" onclick="sendCancelEmail(' + id + ');closeModal();">📧 Gửi mail huỷ</button>';
             if (o.status === 'cancelled') actions += '<button class="btn-action btn-approve" onclick="restoreOrder(' + id + ')">↺ Khôi phục</button>';
             if (o.status !== 'cancelled') actions += '<button class="btn-action btn-assign" onclick="openEditOrder(' + id + ')">✎ Sửa</button>';
             document.getElementById('modal-actions').innerHTML = actions;
@@ -560,8 +562,22 @@
                 const resp = await fetch(`/admin/api/orders/${id}/send-ticket`, { method: 'POST' });
                 const result = await resp.json();
                 if (!result.ok) { showToast(result.error || 'Lỗi gửi mail'); return; }
-                showToast('Đã gửi vé qua email');
+                if (result.kind === 'reassign') {
+                    showToast('Đã gửi mail thông báo xếp ghế mới');
+                } else {
+                    showToast('Đã gửi vé qua email');
+                }
                 loadOrders();
+            } catch (e) { showToast('Lỗi kết nối'); }
+        }
+
+        async function sendCancelEmail(id) {
+            if (!confirm('Gửi email thông báo vé bị huỷ cho khách?')) return;
+            try {
+                const resp = await fetch(`/admin/api/orders/${id}/send-cancel-email`, { method: 'POST' });
+                const result = await resp.json();
+                if (!result.ok) { showToast(result.error || 'Lỗi gửi mail'); return; }
+                showToast('Đã gửi email thông báo huỷ vé');
             } catch (e) { showToast('Lỗi kết nối'); }
         }
 
