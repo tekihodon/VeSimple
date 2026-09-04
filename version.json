@@ -1,10 +1,11 @@
 {
   "name": "VeSimple",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "description": "VeSimple - Hệ thống bán vé liveshow 9 Giờ Kém 15 (Flask + PostgreSQL + Three.js)",
   "docker_image": "tekihodon/vesimple",
-  "released_at": "2026-09-03",
+  "released_at": "2026-09-04",
   "changelog": [
+    "1.7.11: Them version badge vao tat ca cac trang (index/admin/admin_login/3d_chart); API key Resend chua authorize 8keyslive.store - can verify domain tren Resend dashboard.",
     "1.7.10: Update sender email mac dinh: BTC 9hkem15 <admin@8keyslive.store> (parked domain 8keyslive.store).",
     "1.7.9: Email design: phan biet 3 loai (new/reassign/cancel), tuong phan cao, font to, them support info (hotline/email/supportName), them button Gui mail huy cho don cancelled.",
     "1.7.8: Fix bug phan lai ghe - validate_seats_for_items khong truyen order_id nen ghe cu bi loi da phan cho don khac.",

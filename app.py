@@ -39,6 +39,14 @@ def number_filter(value):
     except (ValueError, TypeError):
         return '0'
 
+def get_version():
+    try:
+        with open(os.path.join(app.root_path, 'version.json'), encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get('version', 'unknown')
+    except (OSError, ValueError):
+        return 'unknown'
+
 CART_KEY = 'gk15_cart'
 
 init_schema()
@@ -72,7 +80,8 @@ def index():
                            config=config,
                            event=config.get('event', {}),
                            show=config.get('show', {}),
-                           tiers=get_all_tiers())
+                           tiers=get_all_tiers(),
+                           version=get_version())
 
 @app.route('/api/tiers')
 def api_tiers():
@@ -158,14 +167,14 @@ def api_get_order(code):
 def admin_login_page():
     if check_admin_auth(config):
         return redirect(url_for('admin_dashboard'))
-    return render_template('admin_login.html', config=config)
+    return render_template('admin_login.html', config=config, version=get_version())
 
 @app.route('/admin/login', methods=['POST'])
 def admin_login():
     password = request.form.get('password', '')
     if login_admin(config, password):
         return redirect(url_for('admin_dashboard'))
-    return render_template('admin_login.html', error='Sai mật khẩu', config=config)
+    return render_template('admin_login.html', error='Sai mật khẩu', config=config, version=get_version())
 
 @app.route('/admin/logout')
 def admin_logout():
@@ -177,7 +186,7 @@ def admin_logout():
 def admin_dashboard():
     orders = get_pending_orders()
     stats = get_tier_stats()
-    return render_template('admin.html', config=config, orders=orders, tiers=stats)
+    return render_template('admin.html', config=config, orders=orders, tiers=stats, version=get_version())
 
 @app.route('/admin/api/orders')
 @admin_required

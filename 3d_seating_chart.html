@@ -537,6 +537,24 @@
             .mobile-cart-btn { display: none; }
             .legend-toggle-bar { pointer-events: none; }
         }
+
+        .version-badge {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            min-width: 40px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -1216,6 +1234,15 @@
             renderer.render(scene, camera);
         }
         animate();
+    </script>
+    <script>
+        fetch('/api/version')
+            .then(r => r.json())
+            .then(d => {
+                const badge = document.querySelector('.version-badge');
+                if (badge && d.version) badge.textContent = 'v' + d.version;
+            })
+            .catch(() => {});
     </script>
 </body>
 </html>

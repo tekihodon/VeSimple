@@ -20,6 +20,23 @@
         .error { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; }
         .back-link { display: inline-block; margin-top: 24px; color: #94a3b8; text-decoration: none; font-size: 13px; }
         .back-link:hover { color: #fff; }
+        .version-badge {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            min-width: 40px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -36,5 +53,6 @@
         </form>
         <a href="/" class="back-link">← Quay về trang mua vé</a>
     </div>
+    <div class="version-badge">v{{ version }}</div>
 </body>
 </html>
