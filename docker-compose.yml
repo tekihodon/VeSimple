@@ -9,7 +9,7 @@ services:
         limits:
           memory: 2048M
     hostname: veapp
-    image: tekihodon/vesimple:1.2.0
+    image: tekihodon/vesimple:1.7.11
     dns:
       - 8.8.8.8
       - 8.8.4.4
