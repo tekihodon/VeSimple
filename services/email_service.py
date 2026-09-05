@@ -104,8 +104,7 @@ def _footer_html(config):
 </body></html>"""
 
 
-def _common_event_info(config):
-    ev = _event(config)
+def _common_event_info(ev):
     return f"""
   <div class="event-info">
     <div class="row"><span class="label">📍 Địa điểm</span><span class="value">{ev['venue']}</span></div>
@@ -166,7 +165,7 @@ def send_ticket_email(order, seats, config, kind='new', old_seats=None):
         old_seats_html = ''
 
     seats_html = _render_seats_html(seats_by_tier, tiers_map)
-    common_info = _common_event_info(config)
+    common_info = _common_event_info(ev)
 
     html = _base_html(config, title_bg=title_bg)
     html += f'<div class="ticket-wrap">'
@@ -232,7 +231,7 @@ def send_cancel_email(order, config, seats=None):
     title_bg = 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)'
     subject = f"❌ Vé bị huỷ – {ev['name']} ({ev['date']})"
 
-    common_info = _common_event_info(config)
+    common_info = _common_event_info(ev)
 
     html = _base_html(config, title_bg=title_bg)
     html += f'<div class="ticket-wrap">'
